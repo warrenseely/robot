@@ -59,7 +59,7 @@ int main()
     {
         print(0);//setup screen and let user know waiting
         startup();//choose auto/manual/info mode; only auto mode goes past here
-        //get_GPS_started();//if robot not at start area, calculate path to start area
+        //interference on RD14//get_GPS_started();//if robot not at start area, calculate path to start area
         //navigate_area_start();//if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
         set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
         direction = 1; //set initial direction

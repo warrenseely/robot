@@ -400,11 +400,11 @@ int job_done()
 {
     int i = 0;
 
-    while((boundary.lat1 + i) != 0)//find end of boundary coordinates(may be less than 9 pairs)
+    while((*(&boundary.lat1 + i) != 0) && (i < 19))//find end of boundary coordinates(may be less than 9 pairs)
     {
         i = i + 2;//only looking at the latitudes
     }
-    if((Position.lat == (boundary.lat1 + (i - 2))) && (Position.lon == (boundary.lat1 + (i-1))))//if current position is end of boundary coordinates
+    if((Position.lat == *(&boundary.lat1 + (i - 2))) && (Position.lon == *(&boundary.lat1 + (i-1))))//if current position is end of boundary coordinates
     {
         shut_down();
         return 1;//job is done
@@ -429,9 +429,9 @@ void get_GPS_started()
 
     print(1);//let user know GPS being acquired
     //may implement an interrupt here for the GPS instead. Enable it here?
-    while(flag < 100000000)//wait for GPS to acquire signal; sampling a pulsing signal
+    while(flag < 1000000)//wait for GPS to acquire signal; sampling a pulsing signal
     {
-        temp = PORTRead(IOPORT_D) & 1<<14;
+        temp = PORTRead(IOPORT_D) & 1 << 14;
         if(temp == 0)//get current status of GPS
         {
             //delay(1);//wait for some time
@@ -441,6 +441,7 @@ void get_GPS_started()
         {
             flag = 0;//reset flag
         }
+        temp = 0;
     }
     print(2);//let user know GPS acquired
     //delay(2);
