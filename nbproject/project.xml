@@ -3,7 +3,7 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>robotmac3</name>
+            <name>robot</name>
             <creation-uuid>8ad8cc7c-71a5-4f07-86ae-485cdadfe874</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
