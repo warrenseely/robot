@@ -51,16 +51,16 @@ void correct_path()
     {
         x = D_heading - z;//subtract heading here to compare
 
-        if (x < 0)//go right
+        if (x > 0)//go right
         {
             PORTWrite (IOPORT_B, 2<<10); //right side off, left side on
-            delay (5); //time to turn
+            delay (1); //time to turn
             PORTWrite (IOPORT_B, 3<<10); //both back on
         }
-        else if(x > 0)//go left
+        else if(x < 0)//go left
         {
             PORTWrite (IOPORT_B, 1<<10); //left side off, right side on
-            delay (5); //time to turn
+            delay (1); //time to turn
             PORTWrite (IOPORT_B, 3<<10); //both back on
         }
         else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
@@ -273,7 +273,6 @@ void read_GPS_fields (char * address)
 
 void print(int choice)
 {
-    char *BEGIN = "BEGIN PROGRAM";
     if(choice == 0)
     {
         LCD_rst();
@@ -850,9 +849,17 @@ void navigate_area_start(void)
 
  //****************************************************************************************************************
 
- double field_end()
+ double field_end(double c_pass[4])
  {
      int flag = 0;
+
+     //if current position is not the same as the end coordinates of the current pass, return
+     //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
+     if((Position.lat != c_pass[2]) && (Position.lon != c_pass[3]))
+     {
+         return;
+     }
+
      if(direction == 1)//if current direction is initial direction
      {
          int x = 0;
@@ -861,7 +868,7 @@ void navigate_area_start(void)
          while(x > 0)// loop until C_heading = D_heading + 90
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - C_heading;//subtract to compare
+             x = D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
 
@@ -876,7 +883,7 @@ void navigate_area_start(void)
          while(x > 0)// loop until C_heading = MAS_hed1
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - C_heading;//subtract to compare
+             x = D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
          direction = 0; //update direction
@@ -889,13 +896,21 @@ void navigate_area_start(void)
          while(x > 0)// loop until C_heading = D_heading - 90
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - C_heading;//subtract to compare
+             x = D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
          flag = 0;//reset flag
          while(distance(flag) < width)//wait until traveled width
          {
          }
+         //update the coordinates for the field end points
+         c_pass[0] = Position.lat;//latitude traveling from
+         c_pass[1] = Position.lon;//longitude traveling from
+         
+         //Here we need to figure out the endpoint coordinates for the other end(traveling to)
+
+         //c_pass[2] = Position.lat//latitude traveling to
+         //c_pass[3] = Position.lat//longitude traveling to
 
          D_heading = MAS_head; //desired new heading is secondary heading(MAS_head1) 180 degrees off previous heading
 
@@ -904,7 +919,7 @@ void navigate_area_start(void)
          while(x > 0)// loop until C_heading = MAS_hed
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - C_heading;//subtract to compare
+             x = D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
          direction = 1; //update direction
@@ -918,12 +933,12 @@ void navigate_area_start(void)
 
      if(flag == 0)//first time, copy current(start) location and get start coordinate
      {
-        clat1 = Position.lat;//copy C_pos_Lat, C_pos_Lon; preserve
+        clat1 = Position.lat;//copy Position.lat, Position.lon; preserve
         clon1 = Position.lon;
      }
 
      get_current_data();//get current position
-     clat2 = Position.lat;//copy C_pos_Lat, C_pos_Lon
+     clat2 = Position.lat;//copy Position.lat, Position.lon
      clon2 = Position.lon;
 
      c1 = pow((clat1 - clat2), 2);//get "x" coordinates

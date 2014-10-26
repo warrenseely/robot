@@ -32,11 +32,11 @@ int main()
     int i = 0;
     //Note: LCD commands are in the print()
 
-    reset(); //make sure robot functions are off
-    setup_UART1();  //Initialize the UART1 module
-    setup_UART2(); //Initialize the UART2 module
-    setupPORTs(); //Initialize pin RF8 as digital output
-    setup_SPI1(); //Initialize the SPI1 module for screen communication
+    reset(); //make sure robot functions are off                        //*********************************
+    setup_UART1();  //Initialize the UART1 module                       //*                                *
+    setup_UART2(); //Initialize the UART2 module                        //* These are the setup functions  *
+    setupPORTs(); //Initialize pin RF8 as digital output                //*                                *
+    setup_SPI1(); //Initialize the SPI1 module for screen communication //**********************************
 
     for(i=0; i<=3;i++)
     {
@@ -57,8 +57,7 @@ int main()
         {
             get_current_data();//current lat/lon/heading
             correct_path(); //keeps robot on line
-            //need to check if at field end
-            //field_end();//is robot at field end? if yes then turn around
+
             if (job_done())//is robot finished?
             {
                 do//robot done and program finished
@@ -67,6 +66,9 @@ int main()
                 } while((PORTRead(IOPORT_A) & 0xC0) == 0);//loop until someone wakes robot again by pressing a button
                 break;//break out of the current while loop
             }
+
+            field_end(c_pass);//is robot at field end? if yes then turn around
+            //update field end coordinates here
         }
     }
 

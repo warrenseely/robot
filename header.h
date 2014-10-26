@@ -98,7 +98,7 @@ struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinat
     void get_GPS_started(void);//coming up. autonomous arrival of robot from drop site to job area
     void navigate_area_start(void);//navigate from current position to start of area to cover
     void manual(void);//manual mode
-    double field_end(void);//for turning at field ends
+    double field_end(double temp[]);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
     void LCD_rst(void);//clear and reset display screen
     double distance(int flag);//computes distance from initial call until current call;
