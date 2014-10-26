@@ -45,7 +45,7 @@ void setup_UART1()
     U1MODE = 0;                         //************************************
     U1TXREG = 0;                        //*                                  *
     U1RXREG = 0;                        //* UART setup(mode, baud rate, enable)
-    U1BRG = 31; //changed from 64 to troubleshoot                        //*
+    U1BRG = 64;                         //*
     U1STA = 5<<10;    //both Rx and Tx  //*                                  *
     U1MODE = 0b1000000000000000;        //************************************
 }
