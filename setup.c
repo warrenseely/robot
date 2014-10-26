@@ -20,7 +20,7 @@ void setupPORTs()
     PORTSetPinsDigitalOut(IOPORT_B, BIT_0 | BIT_10 | BIT_11 | BIT_12 | BIT_13); //PORTB 10-13 as robot controls
     PORTSetPinsDigitalOut(IOPORT_F, BIT_8|BIT_5); //UART TX pins
     PORTSetPinsDigitalIn(IOPORT_F, BIT_2|BIT_4|BIT_12); //UART RX pins and GPS status pin
-    PORTSetPinsDigitalIn(IOPORT_D, BIT_14);//for GPS status monitoring
+    PORTSetPinsDigitalIn(IOPORT_D, BIT_3);//for GPS status monitoring
     // Master Mode
 	/* SDO1 - Output - RD0
 	   SDI1 - Input - RC4

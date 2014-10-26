@@ -471,9 +471,9 @@ void get_GPS_started()
 
     print(1);//let user know GPS being acquired
     //may implement an interrupt here for the GPS instead. Enable it here?
-    while(flag < 100000000)//wait for GPS to acquire signal; sampling a pulsing signal
+    while(flag < 10000)//wait for GPS to acquire signal; sampling a pulsing signal
     {
-        temp = PORTRead(IOPORT_D) & 1<<14;
+        temp = PORTRead(IOPORT_D) & 1<<3;
         if(temp == 0)//get current status of GPS
         {
             //delay(1);//wait for some time

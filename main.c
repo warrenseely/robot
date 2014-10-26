@@ -46,20 +46,17 @@ int main()
     setupPORTs(); //Initialize pin RF8 as digital output                //*                                *
     setup_SPI1(); //Initialize the SPI1 module for screen communication //**********************************
 
-//    for(i=0; i<=3;i++)
-//    {
-//        c_pass[i] = &(boundary.lat1) + i;//copy first 2 coordinate pairs of boundary for first pass coordinates
-//    }
-    c_pass[0] = boundary.lat1;
-    c_pass[1] = boundary.lon1;
-    c_pass[2] = boundary.lat2;
-    c_pass[3] = boundary.lon2;
+    for(i=0; i<=3;i++)
+    {
+        c_pass[i] = *(&boundary.lat1 + i);//copy first 2 coordinate pairs of boundary for first pass coordinates
+    }
 
     while(1)//embeded systems run forever
     {
         print(0);//setup screen and let user know waiting
         startup();//choose auto/manual/info mode; only auto mode goes past here
-        //interference on RD14//get_GPS_started();//if robot not at start area, calculate path to start area
+        //interference on RD14
+        get_GPS_started();//if robot not at start area, calculate path to start area
         //navigate_area_start();//if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
         set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
         direction = 1; //set initial direction
