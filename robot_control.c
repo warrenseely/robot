@@ -46,32 +46,32 @@ void correct_path()
     x = boundary.lat1 - Position.lat; //difference in the latitudes
     if (x < 0)
     {
-        x = x * (-1);//make sure x is positive
+        x = x * (-1);   //make sure x is positive
     }
 
-    y = boundary.lon1 - Position.lon;//difference in the longitudes
+    y = boundary.lon1 - Position.lon;   //difference in the longitudes
     if (y < 0)
     {
-        y = y * (-1);//make sure y is positive
+        y = y * (-1);   //make sure y is positive
     }
 
     z = atan (x/y); //get heading, use this to compare to north and desired heading
-    z = (180/3.14159) * z;//convert to degrees
-    if (direction == 1)//if current direction is 1, initial heading to process left/right commands
+    z = (180/3.14159) * z;  //convert to degrees
+    if (direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
-        x = D_heading - z;//subtract heading here to compare
+        x = D_heading - z;  //subtract heading here to compare
 
-        if (x > 0)//go right
+        if (x > 0)  //go right
         {
-            PORTWrite (IOPORT_B, 2<<10); //right side off, left side on
-            delay (1); //time to turn
-            PORTWrite (IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 2<<10);    //right side off, left side on
+            delay (1);  //time to turn
+            PORTWrite (IOPORT_B, 3<<10);    //both back on
         }
-        else if(x < 0)//go left
+        else if(x < 0)  //go left
         {
-            PORTWrite (IOPORT_B, 1<<10); //left side off, right side on
-            delay (1); //time to turn
-            PORTWrite (IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 1<<10);    //left side off, right side on
+            delay (1);  //time to turn
+            PORTWrite (IOPORT_B, 3<<10);    //both back on
         }
         else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
         {
