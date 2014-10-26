@@ -33,13 +33,13 @@ void correct_path()
 //weaties was here bwhahaha
 
 
-    x = boundary[0] - C_pos_Lat; //difference in the latitudes
+    x = boundary.lat1 - Position.lat; //difference in the latitudes
     if (x < 0)
     {
         x = x * (-1);//make sure x is positive
     }
 
-    y = boundary[1] - C_pos_Lon;//difference in the longitudes
+    y = boundary.lon1 - Position.lon;//difference in the longitudes
     if (y < 0)
     {
         y = y * (-1);//make sure y is positive
@@ -57,11 +57,15 @@ void correct_path()
             delay (5); //time to turn
             PORTWrite (IOPORT_B, 3<<10); //both back on
         }
-        else//go left
+        else if(x > 0)//go left
         {
             PORTWrite (IOPORT_B, 1<<10); //left side off, right side on
             delay (5); //time to turn
             PORTWrite (IOPORT_B, 3<<10); //both back on
+        }
+        else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
+        {
+
         }
     }
     else//direction is 0
@@ -74,11 +78,15 @@ void correct_path()
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
         }
-        else//go right
+        else if(x > 0)//go right
         {
             PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
+        }
+        else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
+        {
+
         }
     }
 }
@@ -89,13 +97,13 @@ void correct_path1()//moves the path-to-follow lines across field
 {
     int x = 0, y = 0, z = 0;
 
-    x = boundary[0] - C_pos_Lat; //difference in the latitudes
+    x = boundary.lat1 - Position.lat; //difference in the latitudes
     if(x<0)
     {
         x = x*(-1);//make sure x is positive
     }
 
-    y = boundary[1] - C_pos_Lon;//difference in the longitudes
+    y = boundary.lon1 - Position.lon;//difference in the longitudes
     if(y<0)
     {
         y = y*(-1);//make sure y is positive
@@ -146,20 +154,20 @@ double set_path(int flag)//sets path between first 2 coordinate pairs for robot 
     int x = 0, y = 0, z = 0;
     if(flag == 0)//area heading
     {
-        x = boundary[0] - boundary[2]; //difference in the latitudes
-        y = boundary[1] - boundary[3];//difference in the longitudes
+        x = boundary.lat1 - boundary.lat2; //difference in the latitudes
+        y = boundary.lon1 - boundary.lon2;//difference in the longitudes
     }
     else if(flag == 1)//to/from area heading
     {
-        x = boundary[0] - C_pos_Lat;//difference in the latitudes
-        y = boundary[0] - C_pos_Lon;//difference in the longitudes
+        x = boundary.lat1 - Position.lat;//difference in the latitudes(current to desired start)
+        y = boundary.lon1 - Position.lon;//difference in the longitudes(current to desired start)
     }
 
-    if(x<0)
+    if(x < 0)
     {
         x = x*(-1);//make sure x is positive
     }
-    if(y<0)
+    if(y < 0)
     {
         y = y*(-1);//make sure y is positive
     }
@@ -265,6 +273,7 @@ void read_GPS_fields (char * address)
 
 void print(int choice)
 {
+    char *BEGIN = "BEGIN PROGRAM";
     if(choice == 0)
     {
         LCD_rst();
@@ -329,49 +338,49 @@ void startup()
 void mode()//*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
 {
     int state;//declare
-top:
+    while(1)
+    {
 
-    state = 0;//initialize to 0
-    while(state == 0)//wait until a button is pressed
-    {
-        state = PORTRead(IOPORT_A) & 0xC0;//current state of port A
-    }
+        state = 0;//initialize to 0
+        while(state == 0)//wait until a button is pressed
+        {
+            state = PORTRead(IOPORT_A) & 0xC0;//current state of port A
+        }
 
-    if(state == 0x40)//button 1 pressed(auto mode)
-    {
-        LCD_rst();//reset screen
-        //putsUART1("Auto Mode Chosen");//print this
-        SpiChnPutS(1,"Auto mode chosen",17);
-        //delay(10);//wait for a bit
-        LCD_rst();//reset screen
-        //putsUART1("Please Stand Back");//print this
-        SpiChnPutS(1,"Please stand back",18);
-       // delay(12);//wait for a bit
-        return;//auto mode chosen; continue program
-    }
-    else if(state == 0x80)//button 2 pressed(manual mode)
-    {
-        LCD_rst();//rest screen
-        //putsUART1("Manual Mode Chosen");//print this
-        SpiChnPutS(1,"Manual mode chosen",19);
-        //delay(10);//wait for a bit
-        manual();//maual mode function
-        LCD_rst();//reset screen
-        //putsUART1("Select Mode");//let user know to select new mode
-        SpiChnPutS(1,"Select mode",12);
-        goto top;//loop back up to choose mode again
-    }
-    else if(state == 0xC0)//both buttons pressed(info mode)
-    {
-        LCD_rst();//reset screen
-        //putsUART1("Info Mode Chosen");//print this
-        SpiChnPutS(1,"Info mode chosen",17);
-        //delay(10);//wait for a bit
-        load_info();//load GPS boundary information into memory remotely with bluetooth
-        LCD_rst();//reset screen
-        //putsUART1("Select Mode");//let user know to select new mode
-        SpiChnPutS(1,"Select mode",12);
-        goto top;//loop back up to choose mode again
+        if(state == 0x40)//button 1 pressed(auto mode)
+        {
+            LCD_rst();//reset screen
+            //putsUART1("Auto Mode Chosen");//print this
+            SpiChnPutS(1,"Auto mode chosen",17);
+            //delay(10);//wait for a bit
+            LCD_rst();//reset screen
+            //putsUART1("Please Stand Back");//print this
+            SpiChnPutS(1,"Please stand back",18);
+           // delay(12);//wait for a bit
+            return;//auto mode chosen; continue program
+        }
+        else if(state == 0x80)//button 2 pressed(manual mode)
+        {
+            LCD_rst();//rest screen
+            //putsUART1("Manual Mode Chosen");//print this
+            SpiChnPutS(1,"Manual mode chosen",19);
+            //delay(10);//wait for a bit
+            manual();//maual mode function
+            LCD_rst();//reset screen
+            //putsUART1("Select Mode");//let user know to select new mode
+            SpiChnPutS(1,"Select mode",12);
+        }
+        else if(state == 0xC0)//both buttons pressed(info mode)
+        {
+            LCD_rst();//reset screen
+            //putsUART1("Info Mode Chosen");//print this
+            SpiChnPutS(1,"Info mode chosen",17);
+            //delay(10);//wait for a bit
+            load_info();//load GPS boundary information into memory remotely with bluetooth
+            LCD_rst();//reset screen
+            //putsUART1("Select Mode");//let user know to select new mode
+            SpiChnPutS(1,"Select mode",12);
+        }
     }
 }
 
@@ -392,11 +401,11 @@ int job_done()
 {
     int i = 0;
 
-    while(boundary[i] != 0)//end of boundary coordinates
+    while((boundary.lat1 + i) != 0)//find end of boundary coordinates(may be less than 9 pairs)
     {
         i = i + 2;//only looking at the latitudes
     }
-    if((C_pos_Lat == boundary[i-2]) && (C_pos_Lon == boundary[i-1]))//if current position is end of boundary coordinates
+    if((Position.lat == (boundary.lat1 + (i - 2))) && (Position.lon == (boundary.lat1 + (i-1))))//if current position is end of boundary coordinates
     {
         shut_down();
         return 1;//job is done
@@ -421,28 +430,32 @@ void get_GPS_started()
 
     print(1);//let user know GPS being acquired
     //may implement an interrupt here for the GPS instead. Enable it here?
-  /*  while(flag < 30000000)//wait for GPS to acquire signal
+    while(flag < 100000000)//wait for GPS to acquire signal; sampling a pulsing signal
     {
-        temp = PORTRead(IOPORT_D);// & 1<<14;
+        temp = PORTRead(IOPORT_D) & 1<<14;
         if(temp == 0)//get current status of GPS
         {
-            delay(1);//wait for some time
+            //delay(1);//wait for some time
             flag++;//increment flag
         }
         else
         {
             flag = 0;//reset flag
         }
-    }*/
+    }
     print(2);//let user know GPS acquired
-    delay(2);
+    //delay(2);
+}
+
+void navigate_area_start(void)
+{
     get_current_data();//current lat/lon/heading
-    if((C_pos_Lat == boundary[0]) && (C_pos_Lon == boundary[1]))//if current position is correct, skip function
+    if((Position.lat == boundary.lat1) && (Position.lon == boundary.lon1))//if current position is correct, skip function
     {
         return;//exit function
     }
     set_path(1);//need to compute path from current to var1 coordinates
-    while((C_pos_Lat != boundary[1]) && (C_pos_Lon != boundary[1]))//while not at start destination
+    while((Position.lat != boundary.lat1) && (Position.lon != boundary.lon1))//while not at start destination
     {
         correct_path();//guide robot
         get_current_data();//current lat/lon/heading
@@ -522,7 +535,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[0] = temp1;
+            boundary.lat1 = temp1;
             i = 0;//reset i
         }
         else if(info == 'a')//var1lat
@@ -540,7 +553,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[1] = temp1;
+            boundary.lon1 = temp1;
             i = 0;//reset i
         }
         else if(info == '2')//var1lat
@@ -558,7 +571,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[2] = temp1;
+            boundary.lat2 = temp1;
             i = 0;//reset i
         }
         else if(info == 'b')//var1lat
@@ -576,7 +589,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[3] = temp1;
+            boundary.lon2 = temp1;
             i = 0;//reset i
         }
         else if(info == '3')//var1lat
@@ -594,7 +607,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[4] = temp1;
+            boundary.lat3 = temp1;
             i = 0;//reset i
         }
         else if(info == 'c')//var1lat
@@ -612,7 +625,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[5] = temp1;
+            boundary.lon3 = temp1;
             i = 0;//reset i
         }
         else if(info == '4')//var1lat
@@ -630,7 +643,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[6] = temp1;
+            boundary.lat4 = temp1;
             i = 0;//reset i
         }
         else if(info == 'd')//var1lat
@@ -648,7 +661,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[7] = temp1;
+            boundary.lon4 = temp1;
             i = 0;//reset i
         }
         else if(info == '5')//var1lat
@@ -666,7 +679,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[8] = temp1;
+            boundary.lat5 = temp1;
             i = 0;//reset i
         }
         else if(info == 'e')//var1lat
@@ -684,7 +697,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[9] = temp1;
+            boundary.lon5 = temp1;
             i = 0;//reset i
         }
         else if(info == '6')//var1lat
@@ -702,7 +715,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[10] = temp1;
+            boundary.lat6 = temp1;
             i = 0;//reset i
         }
         else if(info == 'f')//var1lat
@@ -720,7 +733,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[11] = temp1;
+            boundary.lon6 = temp1;
             i = 0;//reset i
         }
         else if(info == '7')//var1lat
@@ -738,7 +751,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[12] = temp1;
+            boundary.lat7 = temp1;
             i = 0;//reset i
         }
         else if(info == 'g')//var1lat
@@ -756,7 +769,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[13] = temp1;
+            boundary.lon7 = temp1;
             i = 0;//reset i
         }
         else if(info == '8')//var1lat
@@ -774,7 +787,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[14] = temp1;
+            boundary.lat8 = temp1;
             i = 0;//reset i
         }
         else if(info == 'h')//var1lat
@@ -792,7 +805,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[15] = temp1;
+            boundary.lon8 = temp1;
             i = 0;//reset i
         }
         else if(info == '9')//var1lat
@@ -810,7 +823,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[16] = temp1;
+            boundary.lat9 = temp1;
             i = 0;//reset i
         }
         else if(info == 'i')//var1lat
@@ -828,7 +841,7 @@ void get_GPS_started()
             }while(info != ',');//loop until read in seperator
 
             sscanf(temp, "%lf", &temp1);//convert to double number and store
-            boundary[17] = temp1;
+            boundary.lon9 = temp1;
             i = 0;//reset i
         }
      }
@@ -905,13 +918,13 @@ void get_GPS_started()
 
      if(flag == 0)//first time, copy current(start) location and get start coordinate
      {
-        clat1 = C_pos_Lat;//copy C_pos_Lat, C_pos_Lon; preserve
-        clon1 = C_pos_Lon;
+        clat1 = Position.lat;//copy C_pos_Lat, C_pos_Lon; preserve
+        clon1 = Position.lon;
      }
 
      get_current_data();//get current position
-     clat2 = C_pos_Lat;//copy C_pos_Lat, C_pos_Lon
-     clon2 = C_pos_Lon;
+     clat2 = Position.lat;//copy C_pos_Lat, C_pos_Lon
+     clon2 = Position.lon;
 
      c1 = pow((clat1 - clat2), 2);//get "x" coordinates
      c2 = pow((clon1 - clon2), 2);//get "y" coordinates

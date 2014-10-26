@@ -18,13 +18,35 @@ extern "C" {
 #include "string.h"
 //#include <peripheral/spi.h>
     /*Declared as external and included here to give access to every file*/
-extern double boundary[];//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
+//extern double boundary[];//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
 extern double MAS_head, MAS_head1, D_heading, C_heading, direction;
-extern double C_pos_Lat, C_pos_Lon, speed, clat1, clon1;
+extern double clat1, clon1;
 extern int width;
 
 
-struct GPS_TRANS
+struct BOUNDARY//base for containing the area boundary
+{
+    double lat1;
+    double lon1;
+    double lat2;
+    double lon2;
+    double lat3;
+    double lon3;
+    double lat4;
+    double lon4;
+    double lat5;
+    double lon5;
+    double lat6;
+    double lon6;
+    double lat7;
+    double lon7;
+    double lat8;
+    double lon8;
+    double lat9;
+    double lon9;
+};
+
+struct GPS_TRANS//base for containing the current robot position
 {
     double lat;
     double lon;
@@ -33,7 +55,7 @@ struct GPS_TRANS
     double date;
 };
 
-struct GPS_DATA_T //85 long
+struct GPS_DATA_T //85 long; base for containing the GPS string
 {
 
     char ID[6];
@@ -54,8 +76,9 @@ struct GPS_DATA_T //85 long
 
 };
 
-struct GPS_TRANS Position;
-struct GPS_DATA_T GPSdata;
+struct GPS_TRANS Position;//define struct to hold robot current position
+struct GPS_DATA_T GPSdata;//define struct to hold GPS string data
+struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
 
 //Function prototypes
     double set_path(int flag);//set heading for robot to follow
@@ -73,6 +96,7 @@ struct GPS_DATA_T GPSdata;
     int job_done(void);//checks to see if robot has finished job coverage area
     void shut_down(void);//shuts robot down
     void get_GPS_started(void);//coming up. autonomous arrival of robot from drop site to job area
+    void navigate_area_start(void);//navigate from current position to start of area to cover
     void manual(void);//manual mode
     double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
