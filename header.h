@@ -11,28 +11,33 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+    /*Declared as external and included here to give access to every file*/
+extern double boundary[];//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
+extern double MAS_head, MAS_head1, D_heading, C_heading, direction;
+extern double C_pos_Lat, C_pos_Lon, speed, clat1, clon1;
+extern int width;
 
 //Function prototypes
-    double set_path(int var1lat, int var1lon, int var2lat, int var2lon, double *MAS_head, double *MAS_head1);//set heading for robot to follow
+    double set_path(int flag);//set heading for robot to follow
     void reset(void); //make sure everything off when starting
     void setupPORTs(void); //setup ports
     void setup_UART1(void);//communication for the display screen
-    double correct_path(double *D_heading, double *C_pos_Lat, double *C_pos_Lon, int var1lat, int var1lon, int direction);
+    void correct_path(void);
     void setup_UART2(void);//communication for the GPS receiver
-    void get_current_data(double *C_pos_Lat, double *C_pos_Lon, double *C_heading);//get current lat/lon/heading from GPS
+    void get_current_data(void);//get current lat/lon/heading from GPS
     void print(int choice);//print desired string
     void startup(void);//beginning program function; use to select mode, and maybe other?
     void mode(void);//choose auto/manual/info modes
     void delay(int i);//a delay function for turning or screen display
-    void job_done(double C_pos_Lat, double C_pos_Lon, int var9lat, int var9lon);//checks to see if robot has finished job coverage area
+    int job_done(void);//checks to see if robot has finished job coverage area
     void shut_down(void);//shuts robot down
-    void get_started(double C_pos_Lat, double C_pos_Lon, int var1lat, int var1lon);//coming up. autonomous arrival of robot from drop site to job area
+    void get_started(void);//coming up. autonomous arrival of robot from drop site to job area
     void manual(void);//manual mode
-    double field_end(double *C_pos_Lat, double *C_pos_Lon, int direction, double *D_heading, double *C_heading, double *MAS_head1, double *MAS_head);//for turning at field ends
+    double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
     void LCD_rst(void);//clear and reset display screen
-
-
+    double distance(int flag);//computes distance from initial call until current call;
+                              //set flag = 0 before initial call;used with loop, returns distance
 
 #ifdef	__cplusplus
 }

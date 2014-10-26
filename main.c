@@ -1,16 +1,16 @@
 /*
  # //***************************************************************************************************************************
 # //* Author:   Warren Seely                                                                                                  *
-# //* Course: NA                                                                         *
-# //* Project:    Autonomous robotic weeder in assembly                                                                                     *
-# //* File: CodeTemplate.s                                                                                                    *
+# //* Course: NA                                                                                                             *
+# //* Project:    Autonomous robotic weeder in C                                                                                     *
+# //* File: Robot_2C                                                                                                   *
 # //* Description: Robot control. GPS positioning and path accuracy                                                  *
-# //*                                                                                                                         *
-# //* Inputs:       Buttons, GPS, CMPS                                                                                                          *
+# //*                   NOTE: field_end IS ONLY WORKABLE FOR 4 CORNER SQUARE IN THIS VERSION                                                                                                      *
+# //* Inputs:       Buttons, GPS,                                                                                                          *
 # //* Outputs:    UART (JE 0:4), motors (JD 0:15)                                                                                                            *
 # //* Computations:     BAUD Rate, heading angle                                                                                                      *
 # //*      REFER TO Robot_1 main.s for further programming info                                                                                                                   *
-# //* Revision History:    1                                                                                                   *
+# //* Revision History:    2                                                                                                   *
 # //***************************************************************************************************************************
 */
 #include <p32xxxx.h>
@@ -22,36 +22,44 @@
 #include "header.h"
 #include "string.h"
 
+/*Global variables*/
+double boundary[18] = {0};//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
+double MAS_head = 0, MAS_head1 = 0, D_heading = 0, C_heading = 0, direction = 0;//master heading/secondary heading(180 off master)/desired heading/current heading/current direction
+double C_pos_Lat = 0, C_pos_Lon = 0, speed = 0, clat1 = 0, clon1 = 0;//current latitude/longitude/speed; distance temp/distance temp
+int width = 15;//width for robot(default) ADD INTO load_info later
 
 int main()
 {
-    //variables
-    int var1lat = 0, var1lon = 0, var2lat = 0, var2lon = 0, var3 = 0, var4 = 0, var5 = 0, var6 = 0, var7 = 0, var8 = 0, var9lat = 0, var9lon = 0;
-    double MAS_head = 0, MAS_head1 = 0, D_heading = 0, C_heading = 0, direction = 0;
-    double C_pos_Lat = 0, C_pos_Lon = 0;
+    //local variables
     int x = 0;
     //Note: LCD commands are in the print function
-
+top:
 
     reset(); //make sure robot functions are off
     setup_UART1();   // Initialize the UART1 module
     setup_UART2(); //Initialize the UART2 module
     setupPORTs(); // Initialize pin RF8 as digital output
     print(0);//setup screen and let user know waiting
-    startup();
-
-    //set_path(var1lat, var1lon, var2lat, var2lon, &MAS_head, &MAS_head1); //set headings required for back and forth
+    startup();//choose auto/manual/info mode; only auto mode goes past here
+    //get_started();//if robot not at start area, calculate path to start area
+    set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
     direction = 1; //set initial direction
     D_heading = MAS_head; //desired initial heading is MAS_head
 
-    while(1)
+    while(1)//main program loop for auto mode
     {
-        get_current_data(&C_pos_Lat, &C_pos_Lon, &C_heading);//current lat/lon/heading
-        correct_path(&D_heading, &C_pos_Lat, &C_pos_Lon, var1lat, var1lon, direction); //keeps robot on line
-        //field_end(&C_pos_Lat, &C_pos_Lon, &D_heading, direction, &C_heading, &MAS_head1, &MAS_head);
+        get_current_data();//current lat/lon/heading
+        //correct_path(); //keeps robot on line
+        //need to check if at field end
+        //field_end();//is robot at field end? if yes then turn around
+        if(job_done())//is robot finished?
+        {
+            do//robot done and program finished
+            {
+            }while((PORTRead(IOPORT_A) & 0xC0) == 0);//loop until someone wakes robot again by pressing a button
+            goto top;//restart program
+        }
     }
-
-
 
     return 1;
 }

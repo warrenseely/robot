@@ -55,7 +55,7 @@ void setup_UART2()
     U2RXREG = 0;                        //* UART setup(mode, baud rate, enable
     U2BRG = 64;                         //*
     U2STA = 5<<10;  //both Rx and Tx    //*                                  *
-    U2MODE = 0b1000000000010000;        //************************************
+    U2MODE = 0b1000000000000000;        //************************************
 
 }
 
