@@ -77,11 +77,10 @@ struct GPS_DATA_T //85 long; base for containing the GPS string
 };
 
 struct GPS_TRANS Position;//define struct to hold robot current position
-struct GPS_DATA_T GPSdata;//define struct to hold GPS string data
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
 
 //Function prototypes
-    double set_path(int flag);//set heading for robot to follow
+    void set_path(int flag);//set heading for robot to follow
     void reset(void); //make sure everything off when starting
     void setupPORTs(void); //setup ports
     void setup_UART1(void);//communication for the display screen
