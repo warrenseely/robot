@@ -19,6 +19,7 @@
 
 #include "header.h"
 
+//Matt's change
 
 /*Global variables*/
 double boundary[18] = {1,2,3,4,0};//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
