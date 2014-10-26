@@ -11,6 +11,12 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#include <plib.h>
+//#include <p32xxxx.h>
+#include <math.h>
+#include "string.h"
+//#include <peripheral/spi.h>
     /*Declared as external and included here to give access to every file*/
 extern double boundary[];//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
 extern double MAS_head, MAS_head1, D_heading, C_heading, direction;
@@ -28,16 +34,18 @@ extern int width;
     void print(int choice);//print desired string
     void startup(void);//beginning program function; use to select mode, and maybe other?
     void mode(void);//choose auto/manual/info modes
-    void delay(int i);//a delay function for turning or screen display
+    void delay(int i);//a delay function for screen display
     int job_done(void);//checks to see if robot has finished job coverage area
     void shut_down(void);//shuts robot down
-    void get_started(void);//coming up. autonomous arrival of robot from drop site to job area
+    void get_GPS_started(void);//make sure GPS acquired signal
     void manual(void);//manual mode
     double field_end(void);//for turning at field ends
-    void load_info(void);//coming up. load GPS coordinates into memory through interface
+    void load_info(void);//load GPS coordinates into memory through interface
     void LCD_rst(void);//clear and reset display screen
     double distance(int flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
+    void setup_SPI1 (void);
+    void navigate_start(void); //if at powerup robot is not near the first coordinate set, navigate to
 
 #ifdef	__cplusplus
 }

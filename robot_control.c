@@ -6,13 +6,14 @@
 #// ***************************************************************************************************************************
 
 #//*********INFORMATION**********************************************************************************************
-#//redo correct_path so works on all lines every width-->create move[4] for storing lat/lon every width across area
-#//load_info set up for BT2, in port JH(uart)
-#//GPS set up in port JH(uart) Modify accordingly when moved to port JE-->display screen moved
-#//
+#//redo correct_path so works on all lines every width-->create c_pass[4] for storing lat/lon every width across area;also pass into set_path
+#//load_info set up for BT2, in port JH(uart2)
+#//GPS set up in port JE(uart1)
+#//For screen on UART: MD0,MD2 are shorted; for screen on SPI: MD0 is shorted, Jp1 SS is shorted;
+#//Set up for SPI1 right now
 #//look into sensors; light, IR, touch
 #//look into robot tracking(in case robot stolen)
-#//move display screen to SPI1
+#//
 #//******************************************************************************************************************
  */
 
@@ -21,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <peripheral/spi.h>
 
 //takes readings from (C_heading, D_heading) and keeps robot on correct path
 void correct_path()
@@ -39,7 +41,7 @@ void correct_path()
         y = y*(-1);//make sure y is positive
     }
 
-    z = atan(x/y); //get heading, use this to compare to north and desired heading 
+    z = atan(x/y); //get heading, use this to compare to north and desired heading
     z = (180/3.14159)*z;//converto to degrees
     if(direction == 1)//if current direction is 1, initial heading to process left/right commands
     {
@@ -79,7 +81,63 @@ void correct_path()
 
 //****************************************************************************************************************
 
-double set_path(int flag)//sets path between 2 coordinate pairs for robot to follow
+void correct_path1()//moves the path-to-follow lines across field
+{
+    int x = 0, y = 0, z = 0;
+
+    x = boundary[0] - C_pos_Lat; //difference in the latitudes
+    if(x<0)
+    {
+        x = x*(-1);//make sure x is positive
+    }
+
+    y = boundary[1] - C_pos_Lon;//difference in the longitudes
+    if(y<0)
+    {
+        y = y*(-1);//make sure y is positive
+    }
+
+    z = atan(x/y); //get heading, use this to compare to north and desired heading
+    z = (180/3.14159)*z;//converto to degrees
+    if(direction == 1)//if current direction is 1, initial heading to process left/right commands
+    {
+        x = D_heading - z;//subtract heading here to compare
+
+        if(x < 0)//go right
+        {
+            PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
+            delay(5); //time to turn
+            PORTWrite(IOPORT_B, 3<<10); //both back on
+        }
+        else//go left
+        {
+            PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
+            delay(5); //time to turn
+            PORTWrite(IOPORT_B, 3<<10); //both back on
+        }
+    }
+    else//direction is 0
+    {
+        x = D_heading - z;//subtract heading here to compare
+
+        if(x < 0)//go left
+        {
+            PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
+            delay(5); //time to turn
+            PORTWrite(IOPORT_B, 3<<10); //both back on
+        }
+        else//go right
+        {
+            PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
+            delay(5); //time to turn
+            PORTWrite(IOPORT_B, 3<<10); //both back on
+        }
+    }
+}
+
+//****************************************************************************************************************
+
+double set_path(int flag)//sets path between first 2 coordinate pairs for robot to follow
 {
     int x = 0, y = 0, z = 0;
     if(flag == 0)//area heading
@@ -92,11 +150,11 @@ double set_path(int flag)//sets path between 2 coordinate pairs for robot to fol
         x = boundary[0] - C_pos_Lat;//difference in the latitudes
         y = boundary[0] - C_pos_Lon;//difference in the longitudes
     }
-    
+
     if(x<0)
     {
         x = x*(-1);//make sure x is positive
-    }   
+    }
     if(y<0)
     {
         y = y*(-1);//make sure y is positive
@@ -125,25 +183,26 @@ double set_path(int flag)//sets path between 2 coordinate pairs for robot to fol
 
 //****************************************************************************************************************
 
-void get_current_data()//gets current lat/lon/speed and heading
+void get_current_data()//gets current lat/lon/speed and heading. Using GPRMC
 {
     int z = 1, i = 1, y = 0, flag = 0, w;//local variables
     char temp[110] = {'\0'}, temp1, temp3[20] = {'\0'};//to store GPS coordinates to
 
-   while(z = 1)//loop while flag true
+   while(z == 1)//loop while flag true
    {
 
-      if(DataRdyUART2())//is new data ready?
+      if(DataRdyUART1())//is new data ready?
       {
-          temp1 = U2RXREG;//copy
+          temp1 = U1RXREG;//copy
           if(temp1 == '$')//begin of GPS String
           {
               temp[0] = temp1;//temp[0] = '$', beginning of string
-              while((temp[i] != '<') || (i < 90)) //end of string indicator or end of array
-              {
-                  if(DataRdyUART2())//is new data ready?
+              while((temp[i] != '<') && (i < 110)) //end of string indicator or end of array
+              {                                     //maybe change < to a global EOF declaration
+                  UART1ClearAllErrors();//can get an overflow error from the GPS. This should clear the error
+                  if(DataRdyUART1())//is new data ready?
                   {
-                    temp[i] = U2RXREG;//read chars into temp
+                    temp[i] = U1RXREG;//read chars into temp
                     i++;//increment
                   }
                     z = 0;//set exit flag
@@ -185,13 +244,13 @@ void get_current_data()//gets current lat/lon/speed and heading
         i = 0;
         while(z < w)//find start of first wanted char string
         {
-            if((temp[i] == ',') && (temp[i] != NULL))//comma or end of string
+            if((temp[i] == ',') && (temp[i] != '\0'))//comma or end of string
             {
                 z++;//increment z
             }
             i++;//increment
         }
-        while((temp[i] != ',') && (temp[i] != NULL))//transfer wanted string to temp3, loop until comma or end of string
+        while((temp[i] != ',') && (temp[i] != '\0'))//transfer wanted string to temp3, loop until comma or end of string
         {
             temp3[y] = temp[i];//copy wanted string
             y++;//increment
@@ -208,33 +267,66 @@ void get_current_data()//gets current lat/lon/speed and heading
 
 void print(int choice)
 {
-   
     if(choice == 0)
     {
         LCD_rst();
-        putsUART1("Begin Program");
-        delay(10);
+        //putsUART1("Begin Program");
+        SpiChnPutS(1,"Begin Program",14);
+        delay(5);
         LCD_rst();
-        putsUART1("Awaiting Input for Mode");
-        delay(10);
+       // putsUART1("Awaiting Input for Mode");
+        SpiChnPutS(1,"Awaiting input for mode",24);
+        delay(5);
         LCD_rst();
-        putsUART1("B1:Auto; B2:Man Both:Info");
+        //putsUART1("B1:Auto; B2:Man Both:Info");
+        SpiChnPutS(1,"B1:Auto; B2:Man Both:Info",26);
     }
     else if(choice == 1)
     {
         LCD_rst();
-        putsUART1("Acquiring GPS Signal");
+        //putsUART1("Acquiring GPS Signal");
+        SpiChnPutS(1,"Acquiring GPS Signal",20);
         //delay(10);
     }
     else if(choice == 2)
     {
         LCD_rst();
-        putsUART1("GPS Signal Acquired");
-        delay(10);
+        //putsUART1("GPS Signal Acquired");
+        SpiChnPutS(1,"GPS Signal Acquired",20);
+        //delay(10);
     }
     else if(choice == 3)
     {
-
+         LCD_rst();//reset screen
+        //putsUART1("Auto Mode Chosen");//print this
+        SpiChnPutS(1,"Auto mode chosen",17);
+        //delay(10);//wait for a bit
+        LCD_rst();//reset screen
+        //putsUART1("Please Stand Back");//print this
+        SpiChnPutS(1,"Please stand back",18);
+        //delay(12);//wait for a bit
+    }
+    else if(choice == 4)
+    {
+        LCD_rst();//rest screen
+        //putsUART1("Manual Mode Chosen");//print this
+        SpiChnPutS(1,"Manual mode chosen",19);
+        //delay(10);//wait for a bit
+        manual();//maual mode function
+        LCD_rst();//reset screen
+        //putsUART1("Select Mode");//let user know to select new mode
+        SpiChnPutS(1,"Select mode",12);
+    }
+    else if(choice == 5)
+    {
+         LCD_rst();//reset screen
+        //putsUART1("Info Mode Chosen");//print this
+        SpiChnPutS(1,"Info mode chosen",17);
+        //delay(10);//wait for a bit
+        load_info();//load GPS boundary information into memory remotely with bluetooth
+        LCD_rst();//reset screen
+        //putsUART1("Select Mode");//let user know to select new mode
+        SpiChnPutS(1,"Select mode",12);
     }
 }
 
@@ -242,30 +334,15 @@ void print(int choice)
 
 void LCD_rst()//set and home display cursor
 {
-    int enable[5] = {27, '[', '3', 'e', 0};//enable command for display
-    int set_cursor[5] = {27, '[','1','c', 0};//set cursor
-    int home_cursor[4] = {27, '[', 'j', 0};//homes cursor
-    int wrap_line[5] = {27, '[', '0', 'h', 0};//wrap line command
+   // char enable[5] = {27, '[', '3', 'e', 0};//enable command for display
+    char set_cursor[] = {27, '[','1','c', '\0'};//set cursor
+    char home_cursor[] = {27, '[', 'j', '\0'};//homes cursor
+    //char wrap_line[5] = {27, '[', '0', 'h', 0};//wrap line command
     int i = 0, z = -1;
 
-    while(z != 0)//wait until all done
-        {
-            z = set_cursor[i]; //copy
-            //z += 48;// convert to ascii char; MUST be in ascii char to print
-            U1TXREG = z; //write it
-            while(BusyUART1()); // Wait until UART2 module is not busy
-            i++; //increment
-        }
-        z = -1;
-        i = 0;
-        while(z != 0)//wait until all done
-        {
-            z = home_cursor[i]; //copy
-            //z += 48;// convert to ascii char; MUST be in ascii char to print
-            U1TXREG = z; //write it
-            while(BusyUART1()); // Wait until UART2 module is not busy
-            i++; //increment
-        }
+    SpiChnPutS(1,set_cursor,4);
+    SpiChnPutS(1,home_cursor,3);
+
 }
 
 //****************************************************************************************************************
@@ -275,7 +352,7 @@ void startup()
     mode(); //choose auto/manual/info-loading mode
             //loop and check status of RF12 pin; if cylcing then wait until stays off before proceeding
             //eventually write in a print message for the LCD to let user know whats going on
-    delay(20); //short delay to back away from robot
+    delay(5); //short delay to back away from robot
 }
 
 //****************************************************************************************************************
@@ -283,43 +360,28 @@ void startup()
 void mode()//*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
 {
     int state;//declare
-top:
+    while(1)//loop here until auto mode chosen
+    {
 
-    state = 0;//initialize to 0
-    while(state == 0)//wait until a button is pressed
-    {
-        state = PORTRead(IOPORT_A) & 0xC0;//current state of port A
-    }
+        state = 0;//initialize to 0
+        while(state == 0)//wait until a button is pressed
+        {
+            state = PORTRead(IOPORT_A) & 0xC0;//current state of port A
+        }
 
-    if(state == 0x40)//button 1 pressed(auto mode)
-    {
-        LCD_rst();//reset screen
-        putsUART1("Auto Mode Chosen");//print this
-        delay(10);//wait for a bit
-        LCD_rst();//reset screen
-        putsUART1("Please Stand Back");//print this
-        delay(12);//wait for a bit
-        return;//auto mode chosen; continue program
-    }
-    else if(state == 0x80)//button 2 pressed(manual mode)
-    {
-        LCD_rst();//rest screen
-        putsUART1("Manual Mode Chosen");//print this
-        //delay(10);//wait for a bit
-        manual();//maual mode function
-        LCD_rst();//reset screen
-        putsUART1("Select Mode");//let user know to select new mode
-        goto top;//loop back up to choose mode again
-    }
-    else if(state == 0xC0)//both buttons pressed(info mode)
-    {
-        LCD_rst();//reset screen
-        putsUART1("Info Mode Chosen");//print this
-        //delay(10);//wait for a bit
-        load_info();//load GPS boundary information into memory remotely with bluetooth
-        LCD_rst();//reset screen
-        putsUART1("Select Mode");//let user know to select new mode
-        goto top;//loop back up to choose mode again
+        if(state == 0x40)//button 1 pressed(auto mode)
+        {
+            print(3);//print
+            return;//auto mode chosen; continue program
+        }
+        else if(state == 0x80)//button 2 pressed(manual mode)
+        {
+            print(4);//print
+        }
+        else if(state == 0xC0)//both buttons pressed(info mode)
+        {
+            print(5);//print
+        }
     }
 }
 
@@ -363,19 +425,27 @@ void shut_down()//stop robot, shut down booms
 
 //****************************************************************************************************************
 //if robot is at location var1, skip. Else plot course to get to location var1
-void get_started()
+void get_GPS_started()
 {
-    get_current_data();//current lat/lon/heading
-    if((C_pos_Lat == boundary[0]) && (C_pos_Lon == boundary[1]))//if current position is correct, skip function
+    int flag = 0,temp = 0;
+
+    print(1);//let user know GPS being acquired
+    //may implement an interrupt here for the GPS instead. Enable it here?
+    while(flag < 30000000)//wait for some time while checking for GPS pulse
     {
-        return;//exit function
+        temp = PORTRead(IOPORT_D) & 1<<14;//read GPS pulse pin
+        if(temp == 0)//nothing
+        {
+            //delay(1);//wait for some time
+            flag++;//increment flag
+        }
+        else
+        {
+            flag = 0;//reset flag
+        }
     }
-    set_path(1);//need to compute path from current to var1 coordinates
-    while((C_pos_Lat != boundary[1]) && (C_pos_Lon != boundary[1]))//while not at start destination
-    {
-        correct_path();//guide robot
-        get_current_data();//current lat/lon/heading
-    }
+    print(2);//let user know GPS acquired
+    //delay(2);
 }
 
 //****************************************************************************************************************
@@ -411,7 +481,8 @@ void get_started()
         else if(choice == 'x')//exit key
         {
             PORTWrite(IOPORT_B, 0);//stop
-            putsUART1("exit");
+            //putsUART1("exit");
+            SpiChnPutS(1,"exit",5);
         }
         if(choice == ' ')//stop key
         {
@@ -830,7 +901,7 @@ void get_started()
  double distance(int flag)//computes distance from initial call until current call; set flag = 0 before initial call;
  {                          //used with loop, returns distance
      double c1, c2 = 0, clat2 = 0, clon2 = 0, d = 0;//temps for latitude, longitude, distance
-     
+
      if(flag == 0)//first time, copy current(start) location and get start coordinate
      {
         clat1 = C_pos_Lat;//copy C_pos_Lat, C_pos_Lon; preserve
@@ -848,4 +919,21 @@ void get_started()
      flag = 1;//set flag
 
      return d;//current distance
+ }
+
+ //****************************************************************************************************************
+
+ void navigate_start()
+ {
+     get_current_data();//current lat/lon/heading
+    if((C_pos_Lat == boundary[0]) && (C_pos_Lon == boundary[1]))//if current position is correct, skip function
+    {
+        return;//exit function
+    }
+    set_path(1);//need to compute path from current to var1 coordinates
+    while((C_pos_Lat != boundary[1]) && (C_pos_Lon != boundary[1]))//while not at start destination
+    {
+        correct_path();//guide robot
+        get_current_data();//current lat/lon/heading
+    }
  }
