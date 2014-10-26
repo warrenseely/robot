@@ -77,7 +77,6 @@ struct GPS_DATA_T //85 long; base for containing the GPS string
 };
 
 struct GPS_TRANS Position;//define struct to hold robot current position
-struct GPS_DATA_T GPSdata;//define struct to hold GPS string data
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
 
 //Function prototypes

@@ -24,7 +24,17 @@
 #include <math.h>
 #include <peripheral/spi.h>
 
-//takes readings from (C_heading, D_heading) and keeps robot on correct path
+/*
+ * Function: correct_path ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: ???
+ * Discription: Takes readings from (C_heading, D_heading) and keeps robot on correct path
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
 void correct_path()
 {
     int x = 0, y = 0, z = 0;
@@ -197,6 +207,8 @@ double set_path(int flag)//sets path between first 2 coordinate pairs for robot 
 
 void get_current_data()//gets current lat/lon/speed and heading
 {
+    struct GPS_DATA_T GPSdata;//define struct to hold the coverage boundary coordinates
+
     char temp = '\0';//, temp1[20] = {'\0'};// {'0','4','9','.','5','6','7','8','9','\0'}, temp2[20] = {'1','1','4','.','0','5','4','3','2','\0'} ;
     int flag = 0;
 //    for(index = 0; index < 10; index++)
