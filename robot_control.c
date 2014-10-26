@@ -151,7 +151,7 @@ void correct_path1()//moves the path-to-follow lines across field
 
 double set_path(int flag)//sets path between first 2 coordinate pairs for robot to follow
 {
-    int x = 0, y = 0, z = 0;
+    double x = 0, y = 0, z = 0;
     if(flag == 0)//area heading
     {
         x = boundary.lat1 - boundary.lat2; //difference in the latitudes
