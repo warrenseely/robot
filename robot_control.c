@@ -103,6 +103,17 @@ void correct_path()
 
 //****************************************************************************************************************
 
+/*
+ * Function: correct_path1 ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: ???
+ * Discription: Moves the path-to-follow lines across the field (in theory...)
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
 void correct_path1()//moves the path-to-follow lines across field
 {
     int x = 0, y = 0, z = 0;
@@ -159,44 +170,57 @@ void correct_path1()//moves the path-to-follow lines across field
 
 //****************************************************************************************************************
 
-double set_path(int flag)//sets path between first 2 coordinate pairs for robot to follow
+/*
+ * Function: set_path ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Sets a robo-nav path between first 2 coordinate pairs (in theory...)
+ * Input: 0 or 1, flags if it is going forward (0) or 180 degrees from forward (1)
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void set_path(int flag) //sets path between first 2 coordinate pairs for robot to follow
 {
     double x = 0, y = 0, z = 0;
-    if(flag == 0)//area heading
+    
+    if (flag == 0)  //area heading
     {
-        x = boundary.lat1 - boundary.lat2; //difference in the latitudes
-        y = boundary.lon1 - boundary.lon2;//difference in the longitudes
+        x = boundary.lat1 - boundary.lat2;  //difference in the latitudes
+        y = boundary.lon1 - boundary.lon2;  //difference in the longitudes
     }
-    else if(flag == 1)//to/from area heading
+    else if (flag == 1)  //to/from area heading
     {
-        x = boundary.lat1 - Position.lat;//difference in the latitudes(current to desired start)
-        y = boundary.lon1 - Position.lon;//difference in the longitudes(current to desired start)
-    }
-
-    if(x < 0)
-    {
-        x = x*(-1);//make sure x is positive
-    }
-    if(y < 0)
-    {
-        y = y*(-1);//make sure y is positive
+        x = boundary.lat1 - Position.lat;   //difference in the latitudes(current to desired start)
+        y = boundary.lon1 - Position.lon;   //difference in the longitudes(current to desired start)
     }
 
-    z = atan(x/y); //get heading, use this to compare to north and desired heading -->****IN RADIANS RIGHT NOW****
-    z = (180/3.14159)*z;//convert to degrees
-
-    MAS_head = z;//master heading
-    if(flag == 1)//to/from area heading
+    if (x < 0)
     {
-        return;//done in this function, exit
+        x = x * (-1);   //make sure x is positive
     }
-    z = MAS_head - 180;//if less than or equal 0, know add 180 to get degrees for opposite direction
+    if (y < 0)
+    {
+        y = y * (-1);   //make sure y is positive
+    }
 
-    if(z <= 0)//add 180 to get opposite direction
+    z = atan (x / y);  //get heading, use this to compare to north and
+                     ////desired heading -->****IN RADIANS RIGHT NOW****
+    z = (180 / 3.14159) * z;   //convert to degrees
+
+    MAS_head = z;    //master heading
+    if (flag == 1)   //to/from area heading
+    {
+        return; //done in this function, exit
+    }
+    z = MAS_head - 180; //if less than or equal 0, know add 180 to get degrees for opposite direction
+
+    if (z <= 0) //add 180 to get opposite direction
     {
         MAS_head1 = MAS_head + 180;
     }
-    else//difference is greater than 0, so subtract 180 to get opposite direction
+    else    //difference is greater than 0, so subtract 180 to get opposite direction
     {
         MAS_head1 = z;
     }
@@ -205,31 +229,37 @@ double set_path(int flag)//sets path between first 2 coordinate pairs for robot 
 
 //****************************************************************************************************************
 
-void get_current_data()//gets current lat/lon/speed and heading
+/*
+ * Function: get_current_data ()
+ * Author: Warren Seely // Matthew Ferran
+ * Date Created: 10/25/14
+ * Date Last Modified: 10/26/14
+ * Discription: Reads the RMC data string from the GPS and parses the latitude and longitude
+ *              into a global struct for current data.
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void get_current_data() //gets current lat/lon/speed and heading
 {
-    struct GPS_DATA_T GPSdata;//define struct to hold the coverage boundary coordinates
+    struct GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
-    char temp = '\0';//, temp1[20] = {'\0'};// {'0','4','9','.','5','6','7','8','9','\0'}, temp2[20] = {'1','1','4','.','0','5','4','3','2','\0'} ;
-    int flag = 0;
-//    for(index = 0; index < 10; index++)
-//    {
-//        *(GPSdata.LAT + index) = temp1[index];
-//    }
-//
-//    for(index = 0; index < 10; index++)
-//    {
-//        *(GPSdata.LON + index) = temp2[index];
-//    }
-    while (flag != 1) // loop until all data is read
+    char temp = '\0';
+    int flag = 0;   //Loop control flag
+
+    while (flag != 1) //Keeps going until the full RMC string is read into
+                    ////GPSdata
     {
-        UART1ClearAllErrors ();
-          //check if new data is ready
+
+        UART1ClearAllErrors (); //Prep buffer for reading
+        //check if new data is ready
         if (DataRdyUART1())//new data ready
         {
 
             temp = U1RXREG; //Get first char from stream
 
-            if (temp == '$')//start fo string
+            if (temp == '$')    //start fo string
             {
                   read_GPS_fields (GPSdata.ID);//grab string
 
@@ -412,16 +442,16 @@ int job_done()
 {
     int i = 0;
 
-    while((boundary.lat1 + i) != 0)//find end of boundary coordinates(may be less than 9 pairs)
+    while( (*(&boundary.lat1 + i) != 0) && (i < 19)) //find end of boundary coordinates(may be less than 9 pairs)
     {
-        i = i + 2;//only looking at the latitudes
+        i = i + 2;  //only looking at the latitudes
     }
-    if((Position.lat == (boundary.lat1 + (i - 2))) && (Position.lon == (boundary.lat1 + (i-1))))//if current position is end of boundary coordinates
+    if( (Position.lat == *(&boundary.lat1 + (i - 2))) && (Position.lon == *(&boundary.lat1 + (i-1))))   //if current position is end of boundary coordinates
     {
         shut_down();
-        return 1;//job is done
+        return 1;   //job is done
     }
-    return 0;//job is not done
+    return 0;   //job is not done
 }
 
 //****************************************************************************************************************
