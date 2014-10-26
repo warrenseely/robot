@@ -35,7 +35,7 @@
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void correct_path()
+void correct_path(void)
 {
     int x = 0, y = 0, z = 0;
 
@@ -73,28 +73,28 @@ void correct_path()
             delay (1);  //time to turn
             PORTWrite (IOPORT_B, 3<<10);    //both back on
         }
-        else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
+        else    //x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
         {
 
         }
     }
-    else//direction is 0
+    else    //direction is 0
     {
-        x = D_heading - z;//subtract heading here to compare
+        x = D_heading - z;  //subtract heading here to compare
 
-        if(x < 0)//go left
+        if(x < 0)   //go left
         {
             PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
         }
-        else if(x > 0)//go right
+        else if(x > 0)  //go right
         {
             PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
         }
-        else//x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
+        else    //x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
         {
 
         }
@@ -114,7 +114,7 @@ void correct_path()
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void correct_path1()//moves the path-to-follow lines across field
+void correct_path1(void)//moves the path-to-follow lines across field
 {
     int x = 0, y = 0, z = 0;
 
@@ -234,14 +234,14 @@ void set_path(int flag) //sets path between first 2 coordinate pairs for robot t
  * Author: Warren Seely // Matthew Ferran
  * Date Created: 10/25/14
  * Date Last Modified: 10/26/14
- * Discription: Reads the RMC data string from the GPS and parses the latitude and longitude
- *              into a global struct for current data.
+ * Discription: Reads the RMC data string from the GPSdata struct and parses
+ *              the latitude and longitude into a global struct for current data.
  * Input: n/a
  * Returns: n/a
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void get_current_data() //gets current lat/lon/speed and heading
+void get_current_data (void) //gets current lat/lon/speed and heading
 {
     struct GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
@@ -253,27 +253,29 @@ void get_current_data() //gets current lat/lon/speed and heading
     {
 
         UART1ClearAllErrors (); //Prep buffer for reading
+
         //check if new data is ready
-        if (DataRdyUART1())//new data ready
+
+        if (DataRdyUART1()) //if new data is ready...
         {
 
-            temp = U1RXREG; //Get first char from stream
+            temp = U1RXREG; //Get the first char from stream
 
-            if (temp == '$')    //start fo string
+            if (temp == '$')    //if at start of string
             {
-                  read_GPS_fields (GPSdata.ID);//grab string
+                  read_GPS_fields (GPSdata.ID); //grab string
 
-                  if(GPSdata.ID[3] == 'M')//check to make sure correct string(GPRMC)
+                  if(GPSdata.ID[3] == 'M')  //check to make sure correct string (GPRMC)
                   {
-                    flag = 1;//set exit
+                    flag = 1;   //set flag to exit
                   }
             }
         }
 
     }
 
-    //Translate GPS data into usable form
-  //convert to double and store
+   //Translate GPS data into usable form by
+   //converting to a string, then to a double, then storing.
    Position.lat = strtod(GPSdata.LAT,NULL);
    Position.lon = strtod(GPSdata.LON,NULL);
    Position.time = strtod(GPSdata.UTC_time,NULL);
@@ -283,28 +285,39 @@ void get_current_data() //gets current lat/lon/speed and heading
 
 //****************************************************************************************************************
 
+/*
+ * Function: read_GPS_fields ()
+ * Author: Warren Seely // Matthew Ferran
+ * Date Created: 10/25/14
+ * Date Last Modified: 10/26/14
+ * Discription: Reads the RMC data string from the GPS and parses the latitude and longitude
+ *              into a  struct for the GPS data.
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
 void read_GPS_fields (char * address)
 {
     char temp = '\0';
     int index = 0;
 
-    while(index < 86)//loop until end of struct
+    while(index < 86)   //loop until end of struct
     {
 
-        UART1ClearAllErrors ();//clear overflow errors
-        if (DataRdyUART1())//new data ready?
+        UART1ClearAllErrors (); //clear overflow errors
+        if (DataRdyUART1()) //new data ready?
         {
-            temp = U1RXREG;//get a character
-            if(temp != ',')//comma seperators between fields
+            temp = U1RXREG; //get a character
+            if(temp != ',') //if not the comma seperators between fields
             {
-            //array[index] = U1RXREG;
-            *(address + index) = temp;//load data into struct fields
-            index++;//increment
+                *(address + index) = temp;  //load data into struct fields
+                index++;    //increment
             }
-            else//if a comma is found, instead populate with NULL to make it a string
+            else    //if a comma is found, instead populate with NULL to make it a string
             {
-                *(address + index) = '\0';//assign a NULL to make string
-                index++;//increment
+                *(address + index) = '\0';  //assign a NULL to make string
+                index++;    //increment
             }
         }
 
@@ -313,114 +326,145 @@ void read_GPS_fields (char * address)
 
 //****************************************************************************************************************
 
-void print(int choice)
+/*
+ * Function: print ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Prints text to the display screen depending on the value of choice
+ * Input: Choice: integer that determines what to display
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void print (int choice)
 {
-    if(choice == 0)
+    if (choice == 0)
     {
-        LCD_rst();
-        //putsUART1("Begin Program");
-        SpiChnPutS(1,"Begin Program",14);
-        delay(5);
-        LCD_rst();
-       // putsUART1("Awaiting Input for Mode");
-        SpiChnPutS(1,"Awaiting input for mode",24);
-        delay(5);
-        LCD_rst();
-        //putsUART1("B1:Auto; B2:Man Both:Info");
-        SpiChnPutS(1,"B1:Auto; B2:Man Both:Info",26);
+        LCD_rst ();
+        SpiChnPutS (1,"Begin Program",14);
+        delay (5);
+        LCD_rst ();
+        SpiChnPutS (1,"Awaiting input for mode",24);
+        delay (5);
+        LCD_rst ();
+        SpiChnPutS (1,"B1:Auto; B2:Man Both:Info",26);
     }
-    else if(choice == 1)
+    else if (choice == 1)
     {
-        LCD_rst();
-        //putsUART1("Acquiring GPS Signal");
-        SpiChnPutS(1,"Acquiring GPS Signal",20);
-        //delay(10);
+        LCD_rst ();
+        SpiChnPutS (1,"Acquiring GPS \nSignal",20);
     }
-    else if(choice == 2)
+    else if (choice == 2)
     {
-        LCD_rst();
-        //putsUART1("GPS Signal Acquired");
-        SpiChnPutS(1,"GPS Signal Acquired",20);
-        //delay(10);
+        LCD_rst ();
+        SpiChnPutS (1,"GPS Signal Acquired",20);
     }
-    else if(choice == 3)
-    {
-        //nada
-    }
+//    else if (choice == 3)
+//    {
+//        //Nothing here yet.
+//    }
 }
 
 //****************************************************************************************************************
 
-void LCD_rst()//set and home display cursor
+/*
+ * Function: LCD_rst ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Set and home display cursor
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void LCD_rst (void)  //set and home display cursor
 {
-   // char enable[5] = {27, '[', '3', 'e', 0};//enable command for display
-    char set_cursor[] = {27, '[','1','c', '\0'};//set cursor
-    char home_cursor[] = {27, '[', 'j', '\0'};//homes cursor
-    //char wrap_line[5] = {27, '[', '0', 'h', 0};//wrap line command
-    int i = 0, z = -1;
+    //char enable[5] = {27, '[', '3', 'e', 0};  //enable command for display
+    char set_cursor[] = {27, '[','1','c', '\0'};    //set cursor
+    char home_cursor[] = {27, '[', 'j', '\0'};  //homes cursor
+    //char wrap_line[5] = {27, '[', '0', 'h', 0};   //wrap line command
+    
 
-    SpiChnPutS(1,set_cursor,4);
-    SpiChnPutS(1,home_cursor,3);
+    SpiChnPutS (1,set_cursor,4);
+    SpiChnPutS (1,home_cursor,3);
 
 }
 
 //****************************************************************************************************************
 
-void startup()
+/*
+ * Function: startup ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Choose a mode, check RF12 pin (?)
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void startup (void)
 {
-    mode(); //choose auto/manual/info-loading mode
-            //loop and check status of RF12 pin; if cylcing then wait until stays off before proceeding
-            //eventually write in a print message for the LCD to let user know whats going on
-    delay(5); //short delay to back away from robot
+    mode (); //choose auto/manual/info-loading mode
+             //loop and check status of RF12 pin; if cylcing then wait until stays off before proceeding
+             //eventually write in a print message for the LCD to let user know whats going on
+    delay (5); //short delay to back away from robot
 }
 
 //****************************************************************************************************************
 
-void mode()//*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
+/*
+ * Function: mode ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Select an functionality mode for the robot
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
 {
-    int state;//declare
-    while(1)
+    int state;  //declare
+    while (1)
     {
 
-        state = 0;//initialize to 0
-        while(state == 0)//wait until a button is pressed
+        state = 0;  //initialize to 0
+        while (state == 0)  //wait until a button is pressed
         {
-            state = PORTRead(IOPORT_A) & 0xC0;//current state of port A
+            state = PORTRead (IOPORT_A) & 0xC0;  //current state of port A
         }
 
-        if(state == 0x40)//button 1 pressed(auto mode)
+        if (state == 0x40)  //button 1 pressed(auto mode)
         {
-            LCD_rst();//reset screen
-            //putsUART1("Auto Mode Chosen");//print this
-            SpiChnPutS(1,"Auto mode chosen",17);
-            //delay(10);//wait for a bit
-            LCD_rst();//reset screen
-            //putsUART1("Please Stand Back");//print this
-            SpiChnPutS(1,"Please stand back",18);
-           // delay(12);//wait for a bit
-            return;//auto mode chosen; continue program
+            LCD_rst (); //reset screen
+            SpiChnPutS (1,"Auto mode chosen",17);
+            delay (2);   //wait for a bit
+            LCD_rst ();  //reset screen
+            SpiChnPutS (1,"Please stand back",18);
+            delay (2);  //wait for a bit
+            return; //auto mode chosen; continue program
         }
-        else if(state == 0x80)//button 2 pressed(manual mode)
+        else if (state == 0x80) //button 2 pressed(manual mode)
         {
-            LCD_rst();//rest screen
-            //putsUART1("Manual Mode Chosen");//print this
-            SpiChnPutS(1,"Manual mode chosen",19);
-            //delay(10);//wait for a bit
-            manual();//maual mode function
-            LCD_rst();//reset screen
-            //putsUART1("Select Mode");//let user know to select new mode
-            SpiChnPutS(1,"Select mode",12);
+            LCD_rst (); //rest screen
+            SpiChnPutS (1,"Manual mode chosen",19);
+            delay (2);   //wait for a bit
+            manual ();   //maual mode function
+            LCD_rst ();  //reset screen
+            SpiChnPutS (1,"Select mode",12);
         }
-        else if(state == 0xC0)//both buttons pressed(info mode)
+        else if(state == 0xC0)  //both buttons pressed(info mode)
         {
-            LCD_rst();//reset screen
-            //putsUART1("Info Mode Chosen");//print this
-            SpiChnPutS(1,"Info mode chosen",17);
-            //delay(10);//wait for a bit
-            load_info();//load GPS boundary information into memory remotely with bluetooth
-            LCD_rst();//reset screen
-            //putsUART1("Select Mode");//let user know to select new mode
-            SpiChnPutS(1,"Select mode",12);
+            LCD_rst();  //reset screen
+            SpiChnPutS (1,"Info mode chosen",17);
+            delay (2);   //wait for a bit
+            load_info ();   //load GPS boundary information into memory remotely with bluetooth
+            LCD_rst (); //reset screen
+            SpiChnPutS (1,"Select mode",12);
         }
     }
 }
