@@ -1,6 +1,6 @@
 /*
  * File:   header.h
- * Author: Warren
+ * Author: Warren Seely // Matthew Ferran
  *
  * Created on January 2, 2014, 9:59 PM
  */
@@ -13,16 +13,35 @@ extern "C" {
 #endif
 
 #include <plib.h>
-//#include <p32xxxx.h>
 #include <math.h>
 #include "string.h"
-//#include <peripheral/spi.h>
-    /*Declared as external and included here to give access to every file*/
-//extern double boundary[];//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
-extern double MAS_head, MAS_head1, D_heading, C_heading, direction;
-extern double clat1, clon1;
+
 extern int width;
 
+
+struct PASS_INFO
+{
+    //The coordinate to navigate from on the current pass
+    double nav_from_lat;
+    double nav_from_lon;
+
+    //The coordinate to navigate to on the current pass
+    double nav_to_lat;
+    double nav_to_lon;
+
+    //The headings necessary for pass guidance
+    double Master;
+    double Secondary;
+    double D_heading;
+    double C_heading;
+
+    //Indicates the current direction; 1 for same as first pass, 0 for opposite first pass
+    int direction;
+
+    //The current latitude and longitude for distance calculations in distance()
+    double clat1;
+    double clon1;
+};
 
 struct BOUNDARY//base for containing the area boundary
 {
@@ -78,6 +97,7 @@ struct GPS_DATA_T //85 long; base for containing the GPS string
 
 struct GPS_TRANS Position;//define struct to hold robot current position
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
+struct PASS_INFO pass;//define struct to contain information for each pass
 
 //Function prototypes
     void set_path(int flag);//set heading for robot to follow
@@ -97,7 +117,7 @@ struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinat
     void get_GPS_started(void);//coming up. autonomous arrival of robot from drop site to job area
     void navigate_area_start(void);//navigate from current position to start of area to cover
     void manual(void);//manual mode
-    double field_end(double temp[]);//for turning at field ends
+    double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
     void LCD_rst(void);//clear and reset display screen
     double distance(int flag);//computes distance from initial call until current call;

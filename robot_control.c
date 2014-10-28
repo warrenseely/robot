@@ -57,9 +57,9 @@ void correct_path(void)
 
     z = atan (x/y); //get heading, use this to compare to north and desired heading
     z = (180/3.14159) * z;  //convert to degrees
-    if (direction == 1) //if current direction is 1, initial heading to process left/right commands
+    if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
-        x = D_heading - z;  //subtract heading here to compare
+        x = pass.D_heading - z;  //subtract heading here to compare
 
         if (x > 0)  //go right
         {
@@ -80,7 +80,7 @@ void correct_path(void)
     }
     else    //direction is 0
     {
-        x = D_heading - z;  //subtract heading here to compare
+        x = pass.D_heading - z;  //subtract heading here to compare
 
         if(x < 0)   //go left
         {
@@ -132,9 +132,9 @@ void correct_path1(void)//moves the path-to-follow lines across field
 
     z = atan(x/y); //get heading, use this to compare to north and desired heading
     z = (180/3.14159)*z;//converto to degrees
-    if(direction == 1)//if current direction is 1, initial heading to process left/right commands
+    if(pass.direction == 1)//if current direction is 1, initial heading to process left/right commands
     {
-        x = D_heading - z;//subtract heading here to compare
+        x = pass.D_heading - z;//subtract heading here to compare
 
         if(x < 0)//go right
         {
@@ -151,7 +151,7 @@ void correct_path1(void)//moves the path-to-follow lines across field
     }
     else//direction is 0
     {
-        x = D_heading - z;//subtract heading here to compare
+        x = pass.D_heading - z;//subtract heading here to compare
 
         if(x < 0)//go left
         {
@@ -209,20 +209,20 @@ void set_path(int flag) //sets path between first 2 coordinate pairs for robot t
                      ////desired heading -->****IN RADIANS RIGHT NOW****
     z = (180 / 3.14159) * z;   //convert to degrees
 
-    MAS_head = z;    //master heading
+    pass.Master = z;    //master heading
     if (flag == 1)   //to/from area heading
     {
         return; //done in this function, exit
     }
-    z = MAS_head - 180; //if less than or equal 0, know add 180 to get degrees for opposite direction
+    z = pass.Master - 180; //if less than or equal 0, know add 180 to get degrees for opposite direction
 
     if (z <= 0) //add 180 to get opposite direction
     {
-        MAS_head1 = MAS_head + 180;
+        pass.Secondary = pass.Master + 180;
     }
     else    //difference is greater than 0, so subtract 180 to get opposite direction
     {
-        MAS_head1 = z;
+        pass.Secondary = z;
     }
 
 }
@@ -935,26 +935,26 @@ void navigate_area_start(void)
 
  //****************************************************************************************************************
 
- double field_end(double c_pass[4])
+ double field_end(void)
  {
      int flag = 0, x, y;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
-     if((Position.lat != c_pass[2]) && (Position.lon != c_pass[3]))
+     if((Position.lat != pass.nav_to_lat) && (Position.lon != pass.nav_to_lon))
      {
          return;
      }
 
-     if(direction == 1)//if current direction is initial direction
+     if(pass.direction == 1)//if current direction is initial direction
      {
          int x = 0;
          PORTWrite(IOPORT_B, 2<<10);//right side off
-         D_heading += 90;//add 90 degrees
+         pass.D_heading += 90;//add 90 degrees
          while(x > 0)// loop until C_heading = D_heading + 90
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - Position.course;//subtract to compare
+             x = pass.D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
 
@@ -962,28 +962,28 @@ void navigate_area_start(void)
          {
          }
 
-         D_heading = MAS_head1; //desired new heading is secondary heading(MAS_head1) 180 degrees off previous heading
+         pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 2<<10);//right side off
 
          while(x > 0)// loop until C_heading = MAS_hed1
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - Position.course;//subtract to compare
+             x = pass.D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
-         direction = 0; //update direction
+         pass.direction = 0; //update direction
      }
      else//current direction is secondary direction
      {
          int x = 0;
          PORTWrite(IOPORT_B, 1<<10);//left side off
-         D_heading -= 90;//subtract 90 degrees
+         pass.D_heading -= 90;//subtract 90 degrees
 
          while(x > 0)// loop until course = D_heading - 90
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - Position.course;//subtract to compare
+             x = pass.D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
          flag = 0;//reset flag
@@ -993,26 +993,26 @@ void navigate_area_start(void)
 
          //update the coordinates for the field end points(Simplified, assuming a square field)
 
-         x = Position.lat - c_pass[2] + c_pass[0];//the new latitude coordinate to navigate to
-         y = Position.lon - c_pass[3] + c_pass[1]; //the new longitude coordinate to navigate to
+         x = Position.lat - pass.nav_to_lat + pass.nav_from_lat;//the new latitude coordinate to navigate to
+         y = Position.lon - pass.nav_to_lon + pass.nav_from_lon; //the new longitude coordinate to navigate to
 
-         //load updated line coordinates into the current pass array
-         c_pass[0] = Position.lat;//latitude traveling from
-         c_pass[1] = Position.lon;//longitude traveling from
-         c_pass[2] = x; //latitude traveling to
-         c_pass[3] = y; //longitude traveling to
+         //load updated line coordinates into the "current pass" struct
+         pass.nav_from_lat = Position.lat;//latitude traveling from
+         pass.nav_from_lon = Position.lon;//longitude traveling from
+         pass.nav_to_lat = x; //latitude traveling to
+         pass.nav_to_lon = y; //longitude traveling to
          
-         D_heading = MAS_head; //desired new heading is secondary heading(MAS_head1) 180 degrees off previous heading
+         pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 1<<10);//left side off
 
          while(x > 0)// loop until course = desired heading
          {
              get_current_data();//get current heading, mainly going for compass heading here
-             x = D_heading - Position.course;//subtract to compare
+             x = pass.D_heading - Position.course;//subtract to compare
          }
          PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
-         direction = 1; //update direction
+         pass.direction = 1; //update direction
      }
  }
 
@@ -1023,16 +1023,16 @@ void navigate_area_start(void)
 
      if(flag == 0)//first time, copy current(start) location and get start coordinate
      {
-        clat1 = Position.lat;//copy Position.lat, Position.lon; preserve
-        clon1 = Position.lon;
+        pass.clat1 = Position.lat;//copy Position.lat, Position.lon; preserve
+        pass.clon1 = Position.lon;
      }
 
      get_current_data();//get current position
      clat2 = Position.lat;//copy Position.lat, Position.lon
      clon2 = Position.lon;
 
-     c1 = pow((clat1 - clat2), 2);//get "x" coordinates
-     c2 = pow((clon1 - clon2), 2);//get "y" coordinates
+     c1 = pow((pass.clat1 - clat2), 2);//get "x" coordinates
+     c2 = pow((pass.clon1 - clon2), 2);//get "y" coordinates
 
      d = sqrt(c1 + c2);//current distance
      flag = 1;//set flag

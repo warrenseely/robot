@@ -1,6 +1,6 @@
 /*
  # //***************************************************************************************************************************
-# //* Author:   Warren Seely                                                                                                  *
+# //* Author:   Warren Seely //Matthew Ferran                                                                                                 *
 # //* Course: NA                                                                                                             *
 # //* Project:    Autonomous robotic weeder in C                                                                                     *
 # //* File: Robot_2C                                                                                                   *
@@ -20,11 +20,8 @@
 #include "header.h"
 
 /*Global variables*/
-//double boundary[18] = {0};//for the boundary coordinates; 9 coordinate pairs; even index is latitudes, odd is longitudes;
-double MAS_head = 0, MAS_head1 = 0, D_heading = 0, C_heading = 0, direction = 0;//master heading/secondary heading(180 off master)/desired heading/current heading/current direction
-double clat1 = 0, clon1 = 0;// distance temp/distance temp
+
 int width = 15;//width for robot(default) ADD INTO load_info later
-double c_pass[4] = {0};//the coordinates to align every width
 
 int main()
 {
@@ -48,7 +45,7 @@ int main()
 
     for(i=0; i<=3;i++)
     {
-        c_pass[i] = *(&boundary.lat1 + i);//copy first 2 coordinate pairs of boundary for first pass coordinates
+        *(&pass.nav_from_lat + i) = *(&boundary.lat1 + i);//copy first 2 coordinate pairs of boundary for first pass coordinates
     }
 
     while(1)//embeded systems run forever
@@ -59,8 +56,8 @@ int main()
         get_GPS_started();//if robot not at start area, calculate path to start area
         //navigate_area_start();//if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
         set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
-        direction = 1; //set initial direction
-        D_heading = MAS_head; //desired initial heading is MAS_head
+        pass.direction = 1; //set initial direction
+        pass.D_heading = pass.Master; //desired initial heading is MAS_head
 
         while(1)//main program loop for auto mode
         {
@@ -76,7 +73,7 @@ int main()
                 break;//break out of the current while loop
             }
 
-            field_end(c_pass);//is robot at field end? if yes then turn around
+            field_end();//is robot at field end? if yes then turn around
             //update field end coordinates here
         }
     }
