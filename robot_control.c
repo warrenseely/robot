@@ -342,23 +342,23 @@ void print (int choice)
     if (choice == 0)
     {
         LCD_rst ();
-        SpiChnPutS (1,"Begin Program",14);
+        SpiChnPutS (1,(unsigned int*)"Begin Program",14);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,"Awaiting input for mode",24);
+        SpiChnPutS (1,(unsigned int*)"Awaiting input for mode",24);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,"B1:Auto; B2:Man Both:Info",26);
+        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man Both:Info",26);
     }
     else if (choice == 1)
     {
         LCD_rst ();
-        SpiChnPutS (1,"Acquiring GPS \nSignal",20);
+        SpiChnPutS (1,(unsigned int*)"Acquiring GPS \nSignal",20);
     }
     else if (choice == 2)
     {
         LCD_rst ();
-        SpiChnPutS (1,"GPS Signal Acquired",20);
+        SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",20);
     }
 //    else if (choice == 3)
 //    {
@@ -387,8 +387,8 @@ void LCD_rst (void)  //set and home display cursor
     //char wrap_line[5] = {27, '[', '0', 'h', 0};   //wrap line command
     
 
-    SpiChnPutS (1,set_cursor,4);
-    SpiChnPutS (1,home_cursor,3);
+    SpiChnPutS (1,(unsigned int*)set_cursor,4);
+    SpiChnPutS (1,(unsigned int*)home_cursor,3);
 
 }
 
@@ -441,30 +441,30 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
         if (state == 0x40)  //button 1 pressed(auto mode)
         {
             LCD_rst (); //reset screen
-            SpiChnPutS (1,"Auto mode chosen",17);
+            SpiChnPutS (1,(unsigned int*)"Auto mode chosen",17);
             delay (2);   //wait for a bit
             LCD_rst ();  //reset screen
-            SpiChnPutS (1,"Please stand back",18);
+            SpiChnPutS (1,(unsigned int*)"Please stand back",18);
             delay (2);  //wait for a bit
             return; //auto mode chosen; continue program
         }
         else if (state == 0x80) //button 2 pressed(manual mode)
         {
             LCD_rst (); //rest screen
-            SpiChnPutS (1,"Manual mode chosen",19);
+            SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
             delay (2);   //wait for a bit
             manual ();   //maual mode function
             LCD_rst ();  //reset screen
-            SpiChnPutS (1,"Select mode",12);
+            SpiChnPutS (1,(unsigned int*)"Select mode",12);
         }
         else if(state == 0xC0)  //both buttons pressed(info mode)
         {
             LCD_rst();  //reset screen
-            SpiChnPutS (1,"Info mode chosen",17);
+            SpiChnPutS (1,(unsigned int*)"Info mode chosen",17);
             delay (2);   //wait for a bit
             load_info ();   //load GPS boundary information into memory remotely with bluetooth
             LCD_rst (); //reset screen
-            SpiChnPutS (1,"Select mode",12);
+            SpiChnPutS (1,(unsigned int*)"Select mode",12);
         }
     }
 }
@@ -581,7 +581,7 @@ void navigate_area_start(void)
         {
             PORTWrite(IOPORT_B, 0);//stop
             //putsUART1("exit");
-            SpiChnPutS(1,"exit",5);
+            SpiChnPutS(1,(unsigned int*)"exit",5);
         }
         if(choice == ' ')//stop key
         {
@@ -937,7 +937,7 @@ void navigate_area_start(void)
 
  double field_end(double c_pass[4])
  {
-     int flag = 0;
+     int flag = 0, x, y;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
@@ -979,7 +979,8 @@ void navigate_area_start(void)
          int x = 0;
          PORTWrite(IOPORT_B, 1<<10);//left side off
          D_heading -= 90;//subtract 90 degrees
-         while(x > 0)// loop until C_heading = D_heading - 90
+
+         while(x > 0)// loop until course = D_heading - 90
          {
              get_current_data();//get current heading, mainly going for compass heading here
              x = D_heading - Position.course;//subtract to compare
@@ -989,20 +990,23 @@ void navigate_area_start(void)
          while(distance(flag) < width)//wait until traveled width
          {
          }
-         //update the coordinates for the field end points
+
+         //update the coordinates for the field end points(Simplified, assuming a square field)
+
+         x = Position.lat - c_pass[2] + c_pass[0];//the new latitude coordinate to navigate to
+         y = Position.lon - c_pass[3] + c_pass[1]; //the new longitude coordinate to navigate to
+
+         //load updated line coordinates into the current pass array
          c_pass[0] = Position.lat;//latitude traveling from
          c_pass[1] = Position.lon;//longitude traveling from
+         c_pass[2] = x; //latitude traveling to
+         c_pass[3] = y; //longitude traveling to
          
-         //Here we need to figure out the endpoint coordinates for the other end(traveling to)
-
-         //c_pass[2] = Position.lat//latitude traveling to
-         //c_pass[3] = Position.lat//longitude traveling to
-
          D_heading = MAS_head; //desired new heading is secondary heading(MAS_head1) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 1<<10);//left side off
 
-         while(x > 0)// loop until C_heading = MAS_hed
+         while(x > 0)// loop until course = desired heading
          {
              get_current_data();//get current heading, mainly going for compass heading here
              x = D_heading - Position.course;//subtract to compare
