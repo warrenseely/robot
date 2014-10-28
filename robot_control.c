@@ -1,5 +1,5 @@
 /*
- #// ***************************************************************************************************************************
+#// ***************************************************************************************************************************
 #// *                                                                                                                         *
 #// *                        THIS FILE PERFORMS ROBOT MOVEMENT COMMANDS                                                *
 #// *                                                                                                                         *
@@ -15,7 +15,7 @@
 #//look into robot tracking(in case robot stolen)
 #//
 #//******************************************************************************************************************
- */
+*/
 
 #include "header.h"
 #include <plib.h>
@@ -35,7 +35,7 @@
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void correct_path(void)
+void correct_path (void)
 {
     int x = 0, y = 0, z = 0;
 
@@ -114,7 +114,7 @@ void correct_path(void)
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void correct_path1(void)//moves the path-to-follow lines across field
+void correct_path1 (void)//moves the path-to-follow lines across field
 {
     int x = 0, y = 0, z = 0;
 
@@ -181,7 +181,7 @@ void correct_path1(void)//moves the path-to-follow lines across field
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void set_path(int flag) //sets path between first 2 coordinate pairs for robot to follow
+void set_path (int flag) //sets path between first 2 coordinate pairs for robot to follow
 {
     double x = 0, y = 0, z = 0;
     
@@ -471,28 +471,51 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
 
 //****************************************************************************************************************
 
-void delay(int i)
+/*
+ * Function: delay ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: ???
+ * Discription: Delay everything by ~ i seconds
+ * Input: number of seconds to delay
+ * Returns: n/a
+ * Preconditions: The program must be running
+ * Postconditions: The program will continue running
+ */
+void delay (int i)
 {
-    i = i*1000000;//scale
-    while(i > 0)
+    i = i * 1000000;  //scale
+    while (i > 0)
     {
-        i--;//decrement 1
+        i--;    //decrement 1
     }
 }
 
 //****************************************************************************************************************
 
-int job_done()
+/*
+ * Function: job_done ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: ???
+ * Discription: Singnals the program to stop 
+ * Input: n/a
+ * Returns: 1 if job's done, 0 if job's not done
+ * Preconditions: The program must be running
+ * Postconditions: The program will either stop or continue
+ */
+int job_done (void)
 {
     int i = 0;
 
-    while( (*(&boundary.lat1 + i) != 0) && (i < 19)) //find end of boundary coordinates(may be less than 9 pairs)
+    while ( (*(&boundary.lat1 + i) != 0) && (i < 19)) //find end of boundary coordinates(may be less than 9 pairs)
     {
         i = i + 2;  //only looking at the latitudes
     }
-    if( (Position.lat == *(&boundary.lat1 + (i - 2))) && (Position.lon == *(&boundary.lat1 + (i-1))))   //if current position is end of boundary coordinates
+    if ( (Position.lat == *(&boundary.lat1 + (i - 2)) ) && //if current position is 
+         (Position.lon == *(&boundary.lat1 + (i - 1)) ) )   ////end of boundary coordinates
     {
-        shut_down();
+        shut_down ();
         return 1;   //job is done
     }
     return 0;   //job is not done
@@ -500,42 +523,77 @@ int job_done()
 
 //****************************************************************************************************************
 
-void shut_down()//stop robot, shut down booms
+/*
+ * Function: shut_down ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: ???
+ * Discription: Stops the robot and shuts down booms
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: The robot is running
+ * Postconditions: The robot is no longer running
+ */
+void shut_down (void)    //stop robot, shut down booms
 {
-    PORTWrite(IOPORT_B, 0);//shut off robot motors
-    //PORTWrite(IOPORT_A, 0);//shut off other
-    //Here incorporate remote message send to phone
+    PORTWrite (IOPORT_B, 0); //shut off robot motors
+    //PORTWrite (IOPORT_A, 0);  //shut off other
+    //Here incorporate remote message send to phone/command app
 }
 
 //****************************************************************************************************************
-//if robot is at location var1, skip. Else plot course to get to location var1
-void get_GPS_started()
+
+/*
+ * Function: get_GPS_started ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: If robot is at start point, skip, else nav to start point
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: The robot is somewhere
+ * Postconditions: The robot is at the start point
+ */
+void get_GPS_started (void)  //if robot is at location var1, skip. Else plot course to get to location var1
 {
     int flag = 0,temp = 0;
 
-    print(1);//let user know GPS being acquired
+    print(1);   //let user know GPS being acquired
     //may implement an interrupt here for the GPS instead. Enable it here?
-    while(flag < 10000)//wait for GPS to acquire signal; sampling a pulsing signal
+    while (flag < 10000)    //wait for GPS to acquire signal; sampling a pulsing signal
     {
-        temp = PORTRead(IOPORT_D) & 1<<3;
-        if(temp == 0)//get current status of GPS
+        temp = PORTRead (IOPORT_D) & 1 << 3;
+        if (temp == 0)   //get current status of GPS
         {
-            //delay(1);//wait for some time
-            flag++;//increment flag
+            //delay (1);    //wait for some time
+            flag++; //increment flag
         }
         else
         {
-            flag = 0;//reset flag
+            flag = 0;   //reset flag
         }
     }
-    print(2);//let user know GPS acquired
-    //delay(2);
+    print (2);  //let user know GPS acquired
+    //delay (2);
 }
 
-void navigate_area_start(void)
+//****************************************************************************************************************
+
+/*
+ * Function: get_GPS_started ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: If robot is at start point, skip, else nav to start point
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: The robot is somewhere
+ * Postconditions: The robot is at the start point
+ */
+void navigate_area_start (void)
 {
-    get_current_data();//current lat/lon/heading
-    if((Position.lat == boundary.lat1) && (Position.lon == boundary.lon1))//if current position is correct, skip function
+    get_current_data ();//current lat/lon/heading
+    if ((Position.lat == boundary.lat1) && (Position.lon == boundary.lon1))//if current position is correct, skip function
     {
         return;//exit function
     }
