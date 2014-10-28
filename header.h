@@ -19,7 +19,7 @@ extern "C" {
 extern int width;
 
 
-struct PASS_INFO
+typedef struct
 {
     //The coordinate to navigate from on the current pass
     double nav_from_lat;
@@ -41,7 +41,7 @@ struct PASS_INFO
     //The current latitude and longitude for distance calculations in distance()
     double clat1;
     double clon1;
-};
+}PASS_INFO;
 
 struct BOUNDARY//base for containing the area boundary
 {
@@ -97,7 +97,7 @@ struct GPS_DATA_T //85 long; base for containing the GPS string
 
 struct GPS_TRANS Position;//define struct to hold robot current position
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
-struct PASS_INFO pass;//define struct to contain information for each pass
+PASS_INFO pass;//define struct to contain information for each pass
 
 //Function prototypes
     void set_path(int flag);//set heading for robot to follow
