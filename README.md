@@ -1,6 +1,8 @@
 robot
 =====
 
+==An autonomous (and remote controlled) robot that weeds your lawn!
+
 General coding practices:
 -------------------------
 {there is a space between the function type, name, and formal parameter list}
