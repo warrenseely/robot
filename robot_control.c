@@ -665,24 +665,38 @@ void navigate_area_start (void)
 
  //****************************************************************************************************************
 
+ /*
+ * Function: load_info ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: Get's coordinates from BT2 module; x is exit info mode
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
  void load_info(void) //get coordinates from BT2 module; x is exit info mode
  {                   
     char type[3] = {'\0'}, flag = '\0'; //temps to hold selection number
     int i = 1, pairnum = 0; //i set to 1 as default(longitude)
         
-    while(flag != 'x') //while choice is not to exit
+    do
     {
         load_info_get_modify(&pairnum, type, &flag); //gets the coordinate pair to modify(1-9) and whether modifying latitude or longitude
-
+        if (flag == 'x')
+        {
+            break;
+        }
         if (type[1] == 'a') //if "lat" entered, type[1] is an 'a'; if "lon" entered, type[1] is an 'o'
         {
             i = 0; //if latitude, set i to 0 and pass
         }
 
         load_coordinate(pairnum, i, &flag); //get the coordinate number and load into appropriate location in struct
-     }
+     }while(flag != 'x'); //while choice is not to exit
 
-    putsUART2("Exiting load_info().\n"); //inform user eixting load_info()
+    putsUART2("\n\rExiting load_info().\n"); //inform user eixting load_info()
  }
 
 //****************************************************************************************************************
@@ -692,7 +706,7 @@ void navigate_area_start (void)
      char pair = '\0';
      int i = 0;
 
-     putsUART2("Which coordinate pair do you wish to enter(1-9). Enter x to exit.\n"); //write to terminal and prompt for data
+     putsUART2("\n\rWhich coordinate pair do you wish to enter(1-9). Enter x to exit.\n"); //write to terminal and prompt for data
 
     while (pair == '\0') // loop until something read into pair
     {
@@ -709,7 +723,7 @@ void navigate_area_start (void)
 
      *pairnum = (pair - '0'); //send the pair number back as an integer
 
-        putsUART2("Modifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
+        putsUART2("\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
 
         while (type[2] == '\0') // loop until have "lat" or "lon"
         {
@@ -735,7 +749,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
     pairnum = (pairnum - 1) * 2; //convert pairnum (from 1-9) to a number (from 0-17) to use as the struct address offset
 
-    putsUART2("Enter the coordinate number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
+    putsUART2("\n\rEnter the coordinate number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
 
     do
     {
