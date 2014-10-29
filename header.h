@@ -19,7 +19,7 @@ extern "C" {
 extern int width;
 
 
-typedef struct
+struct PASS_INFO
 {
     //The coordinate to navigate from on the current pass
     double nav_from_lat;
@@ -41,7 +41,7 @@ typedef struct
     //The current latitude and longitude for distance calculations in distance()
     double clat1;
     double clon1;
-}PASS_INFO;
+};
 
 struct BOUNDARY//base for containing the area boundary
 {
@@ -74,7 +74,7 @@ struct GPS_TRANS//base for containing the current robot position
     double date;
 };
 
-typedef struct  //85 long; base for containing the GPS string
+struct GPS_DATA_T //85 long; base for containing the GPS string
 {
 
     char ID[6];
@@ -93,11 +93,11 @@ typedef struct  //85 long; base for containing the GPS string
     char Checksum[4];
     char Eom[9];
 
-} GPS_DATA_T;
+};
 
 struct GPS_TRANS Position;//define struct to hold robot current position
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
-PASS_INFO pass;//define struct to contain information for each pass
+struct PASS_INFO pass;//define struct to contain information for each pass
 
 //Function prototypes
     void set_path(int flag);//set heading for robot to follow
@@ -119,6 +119,8 @@ PASS_INFO pass;//define struct to contain information for each pass
     void manual(void);//manual mode
     double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
+    void load_info_get_modify(char *pair, char type[], char *flag);
+    void load_coordinate(char pair, int type);
     void LCD_rst(void);//clear and reset display screen
     double distance(int flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
