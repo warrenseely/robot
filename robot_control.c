@@ -114,56 +114,56 @@ void correct_path (void)
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void correct_path1 (void)//moves the path-to-follow lines across field
+void correct_path1 (void) //moves the path-to-follow lines across field
 {
     int x = 0, y = 0, z = 0;
 
     x = boundary.lat1 - Position.lat; //difference in the latitudes
-    if(x<0)
+    if (x < 0)
     {
-        x = x*(-1);//make sure x is positive
+        x = x * (-1); //make sure x is positive
     }
 
-    y = boundary.lon1 - Position.lon;//difference in the longitudes
-    if(y<0)
+    y = boundary.lon1 - Position.lon; //difference in the longitudes
+    if (y < 0)
     {
-        y = y*(-1);//make sure y is positive
+        y = y *(-1); //make sure y is positive
     }
 
-    z = atan(x/y); //get heading, use this to compare to north and desired heading
-    z = (180/3.14159)*z;//converto to degrees
-    if(pass.direction == 1)//if current direction is 1, initial heading to process left/right commands
+    z = atan (x/y); //get heading, use this to compare to north and desired heading
+    z = (180/3.14159) * z; //converto to degrees
+    if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
-        x = pass.D_heading - z;//subtract heading here to compare
+        x = pass.D_heading - z; //subtract heading here to compare
 
-        if(x < 0)//go right
+        if (x < 0) //go right
         {
-            PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
-            delay(5); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 2<<10); //right side off, left side on
+            delay (5); //time to turn
+            PORTWrite (IOPORT_B, 3<<10); //both back on
         }
-        else//go left
+        else //go left
         {
-            PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
-            delay(5); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 1<<10); //left side off, right side on
+            delay (5); //time to turn
+            PORTWrite (IOPORT_B, 3<<10); //both back on
         }
     }
-    else//direction is 0
+    else //direction is 0
     {
-        x = pass.D_heading - z;//subtract heading here to compare
+        x = pass.D_heading - z; //subtract heading here to compare
 
-        if(x < 0)//go left
+        if (x < 0) //go left
         {
-            PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
-            delay(5); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 1<<10); //left side off, right side on
+            delay (5); //time to turn
+            PORTWrite (IOPORT_B, 3<<10); //both back on
         }
-        else//go right
+        else //go right
         {
-            PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
-            delay(5); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            PORTWrite (IOPORT_B, 2<<10); //right side off, left side on
+            delay (5); //time to turn
+            PORTWrite (IOPORT_B, 3<<10); //both back on
         }
     }
 }
@@ -243,7 +243,7 @@ void set_path (int flag) //sets path between first 2 coordinate pairs for robot 
  */
 void get_current_data (void) //gets current lat/lon/speed and heading
 {
-    struct GPS_DATA_T GPSdata;  //Struct to read the RMC data into
+    GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
     char temp = '\0';
     int flag = 0;   //Loop control flag
@@ -302,7 +302,7 @@ void read_GPS_fields (char * address)
     char temp = '\0';
     int index = 0;
 
-    while(index < 86)   //loop until end of struct
+    while (index < 86)   //loop until end of struct
     {
 
         UART1ClearAllErrors (); //clear overflow errors
@@ -548,11 +548,12 @@ void shut_down (void)    //stop robot, shut down booms
  * Author: Warren Seely
  * Date Created: ???
  * Date Last Modified: 10/26/14
- * Discription: If robot is at start point, skip, else nav to start point
+ * Discription: If robot is at start point, skip,
+ *              else plots course to get robot to start point
  * Input: n/a
  * Returns: n/a
  * Preconditions: The robot is somewhere
- * Postconditions: The robot is at the start point
+ * Postconditions: n/a
  */
 void get_GPS_started (void)  //if robot is at location var1, skip. Else plot course to get to location var1
 {
@@ -580,11 +581,11 @@ void get_GPS_started (void)  //if robot is at location var1, skip. Else plot cou
 //****************************************************************************************************************
 
 /*
- * Function: get_GPS_started ()
+ * Function: navigate_area_start ()
  * Author: Warren Seely
  * Date Created: ???
  * Date Last Modified: 10/26/14
- * Discription: If robot is at start point, skip, else nav to start point
+ * Discription: Navigates the robot to the start point
  * Input: n/a
  * Returns: n/a
  * Preconditions: The robot is somewhere
@@ -592,58 +593,72 @@ void get_GPS_started (void)  //if robot is at location var1, skip. Else plot cou
  */
 void navigate_area_start (void)
 {
-    get_current_data ();//current lat/lon/heading
-    if ((Position.lat == boundary.lat1) && (Position.lon == boundary.lon1))//if current position is correct, skip function
+    get_current_data (); //current lat/lon/heading
+    if ( (Position.lat == boundary.lat1) && 
+         (Position.lon == boundary.lon1) ) //if current position is correct, skip function
     {
-        return;//exit function
+        return; //exit function
     }
-    set_path(1);//need to compute path from current to var1 coordinates
-    while((Position.lat != boundary.lat1) && (Position.lon != boundary.lon1))//while not at start destination
+    set_path (1); //need to compute path from current to var1 coordinates
+    while ( (Position.lat != boundary.lat1) && 
+            (Position.lon != boundary.lon1) ) //while not at start destination
     {
-        correct_path();//guide robot
-        get_current_data();//current lat/lon/heading
+        correct_path (); //guide robot
+        get_current_data (); //current lat/lon/heading
     }
 }
 
 //****************************************************************************************************************
 
- void manual()//remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
+/*
+ * Function: manual ()
+ * Author: Warren Seely
+ * Date Created: ???
+ * Date Last Modified: 10/26/14
+ * Discription: Remote control mode (x: exit, w: forward, a: turn left, d: turn right,
+ *                                   s: reverse, spacebar: stop)
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: Manual mode is selected by the user
+ * Postconditions: The robot can be controled by WASDX and SPACE
+ */
+ void manual (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
-     char choice;
+    char choice = '\0';
 
-     while(choice != 'x')//while choice is not to exit
+    while (choice != 'x') //while choice is not to exit
     {
-        if(DataRdyUART2())//new data ready?
+        if (DataRdyUART2()) //new data ready?
         {
-            choice = U2RXREG;//copy to variable
-           // U1TXREG = choice;//write to screen(optional)
+            choice = U2RXREG; //copy to variable
+           // U1TXREG = choice; //write to screen(optional)
         }
 
-        if(choice == 'd')//right key
+        if (choice == 'd') //right key
         {
-            PORTWrite(IOPORT_B, 1<<10);//right
+            PORTWrite (IOPORT_B, 1<<10); //right
         }
-        else if(choice == 'a')//left key
+        else if (choice == 'a') //left key
         {
-            PORTWrite(IOPORT_B, 2<<10);//left
+            PORTWrite (IOPORT_B, 2<<10); //left
         }
-        else if(choice == 'w')//forward key
+        else if (choice == 'w') //forward key
         {
-            PORTWrite(IOPORT_B, 3<<10);//forward
+            PORTWrite (IOPORT_B, 3<<10); //forward
         }
-        else if(choice == 'z')//backward key
+        else if (choice == 's') //backward key
         {
-            PORTWrite(IOPORT_B, 7<<10);//backward
+            PORTWrite (IOPORT_B, 7<<10); //backward
         }
-        else if(choice == 'x')//exit key
+        else if (choice == 'x') //exit key
         {
-            PORTWrite(IOPORT_B, 0);//stop
-            //putsUART1("exit");
-            SpiChnPutS(1,(unsigned int*)"exit",5);
+            PORTWrite (IOPORT_B, 0); //stop
+            //putsUART1 ("exit");
+            SpiChnPutS (1, (unsigned int*)"exit", 5);
         }
-        if(choice == ' ')//stop key
+        if (choice == ' ') //stop key
         {
-            PORTWrite(IOPORT_B, 0);//stop
+            PORTWrite (IOPORT_B, 0); //stop
         }
     }
  }
