@@ -25,14 +25,14 @@ int width = 15;//width for robot(default) ADD INTO load_info later
 
 int main()
 {
-    boundary.lat1 = 46.725692;
+   /* boundary.lat1 = 46.725692;
     boundary.lon1 = 117.162027;
     boundary.lat2 = 46.726196;
     boundary.lon2 = 117.162090;
     boundary.lat3 = 46.726194;
     boundary.lon3 = 117.161652;
     boundary.lat4 = 46.725802;
-    boundary.lon4 = 117.161615;
+    boundary.lon4 = 117.161615;*/
     //local variables
     int i = 0;
     //Note: LCD commands are in the print()
@@ -53,7 +53,7 @@ int main()
         print(0);//setup screen and let user know waiting
         startup();//choose auto/manual/info mode; only auto mode goes past here
         //interference on RD14
-        get_GPS_started();//if robot not at start area, calculate path to start area
+        //get_GPS_started();//if robot not at start area, calculate path to start area
         //navigate_area_start();//if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
         set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
         pass.direction = 1; //set initial direction
