@@ -243,7 +243,7 @@ void set_path (int flag) //sets path between first 2 coordinate pairs for robot 
  */
 void get_current_data (void) //gets current lat/lon/speed and heading
 {
-    GPS_DATA_T GPSdata;  //Struct to read the RMC data into
+    struct GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
     char temp = '\0';
     int flag = 0;   //Loop control flag
@@ -665,401 +665,112 @@ void navigate_area_start (void)
 
  //****************************************************************************************************************
 
- void load_info(void)//get coordinates from BT2 module; x is exit info mode
- {                   //numbers 1-9 are the latitudes, letters a-i are the longitdes denote the coordinates to choose
-     char pair = '\0', type[4] = {'\0'}, flag = '\0', temp[20] = {'\0'};//temps to hold GPS chars and selection number
-    int i = 0;
-    double temp1;
-    
+ void load_info(void) //get coordinates from BT2 module; x is exit info mode
+ {                   
+    char type[3] = {'\0'}, flag = '\0'; //temps to hold selection number
+    int i = 1, pairnum = 0; //i set to 1 as default(longitude)
         
-    while(flag != 'x')//while choice is not to exit
+    while(flag != 'x') //while choice is not to exit
     {
-        load_info_get_modify(&pair, type, &flag);
+        load_info_get_modify(&pairnum, type, &flag); //gets the coordinate pair to modify(1-9) and whether modifying latitude or longitude
 
-        if (type[1] == 'a')
+        if (type[1] == 'a') //if "lat" entered, type[1] is an 'a'; if "lon" entered, type[1] is an 'o'
         {
-            i = 0; //if latitude, set i to 1 and pass
+            i = 0; //if latitude, set i to 0 and pass
         }
-        load_coordinate(pair, i);
-            
-             
-         
-         
-//        if(DataRdyUART2())//new data ready?
-//        {
-//            info = U2RXREG;//copy to variable
-//           // U1TXREG = choice;//write to screen(optional)
-//        }
-//        if(info == '1')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat1 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'a')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon1 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '2')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat2 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'b')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon2 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '3')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat3 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'c')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon3 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '4')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat4 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'd')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon4 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '5')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat5 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'e')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon5 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '6')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat6 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'f')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon6 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '7')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat7 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'g')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon7 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '8')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat8 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'h')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon8 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == '9')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lat9 = temp1;
-//            i = 0;//reset i
-//        }
-//        else if(info == 'i')//var1lat
-//        {
-//            do
-//            {
-//                if(DataRdyUART2())//new data ready?
-//                {
-//                        info = U2RXREG;//copy to variable
-//                        if(((info >= '0') && (info <= '9')) || (info == '.'))//make sure only numbers and decimal points
-//                        {
-//                            temp[i++] = info;//copy to array
-//                        }
-//                }
-//            }while(info != ',');//loop until read in seperator
-//
-//            sscanf(temp, "%lf", &temp1);//convert to double number and store
-//            boundary.lon9 = temp1;
-//            i = 0;//reset i
-//        }
+
+        load_coordinate(pairnum, i, &flag); //get the coordinate number and load into appropriate location in struct
      }
 
+    putsUART2("Exiting load_info().\n"); //inform user eixting load_info()
  }
 
 //****************************************************************************************************************
 
- void load_info_get_modify(char *pair, char type[], char *flag) //gets the coordinate pair, and if it is latitude or longitude
+ void load_info_get_modify(int *pairnum, char type[], char *flag) //gets the coordinate pair, and if it is latitude or longitude
  {
+     char pair = '\0';
+     int i = 0;
+
      putsUART2("Which coordinate pair do you wish to enter(1-9). Enter x to exit.\n"); //write to terminal and prompt for data
 
-        while (*pair == '\0') // loop until something read into pair
-        {
-            if (DataRdyUART2())
+    while (pair == '\0') // loop until something read into pair
+    {
+        if (DataRdyUART2())
+         {
+             pair = U2RXREG; //get coordinate pair to modify
+             if (pair == 'x')
              {
-                 *pair = U2RXREG; //get coordinate pair to modify
-             }
-            if (*pair == 'x')
-            {
                 *flag = 'x';
                 return; //exit helper
-            }
-        }
+             }
+         }
+    }
+
+     *pairnum = (pair - '0'); //send the pair number back as an integer
 
         putsUART2("Modifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
 
-        while (type == '\0') // loop until something read into pair
+        while (type[2] == '\0') // loop until have "lat" or "lon"
         {
             if (DataRdyUART2())
              {
-                 type[0] = U2RXREG; //get first char; latitude/longitude to modify
-                 if (type[0] == 'x')
+                 type[i] = U2RXREG; //get first char; latitude/longitude to modify
+                 if (type[i] == 'x')
                  {
                     *flag = 'x';
                     return; //exit helper
                  }
-                 type[1] = U2RXREG; //next char
-                 type[2] = U2RXREG; //last char
+                 i++; //increment array index
              }            
         }
  }
 
  //****************************************************************************************************************
 
-void load_coordinate(char pair, int i) //actually load the coordinate information
+void load_coordinate(int pairnum, int i, char *flag) //actually load the coordinate information
 {
-    //will get coordinate information here and add to the boundary struct
+    int counter = 0;
+    char temp[20] = {'\0'}, temp1 = '\0';
+
+    pairnum = (pairnum - 1) * 2; //convert pairnum (from 1-9) to a number (from 0-17) to use as the struct address offset
+
+    putsUART2("Enter the coordinate number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
+
+    do
+    {
+        if (DataRdyUART2()) //new data ready
+        {
+            temp1 = U2RXREG; //copy data to variable
+
+            if (temp1 == 'x') //exit command
+            {
+                *flag = 'x'; //set exit flag
+                return; //exit helper function
+            }
+            if ((temp1 >= '0') && (temp1 <= '9') || (temp1 == '.')) //read to array only if input is a number or period
+            {
+                temp[counter] = temp1; //get the data
+                counter++; //increment array address
+            }
+        }
+    }while(temp1 != ','); // End of number string signaled by a comma
+
+    for (counter = 0; counter < 18; counter++) //loop to check which coordinate pair to load into
+    {
+        if (pairnum == counter) //found correct coordinate pair
+        {
+            //match counter to boundary.coordinate
+           if (i == 0) //loading into latitude
+           {
+               *(&boundary.lat1 + counter) = atof(temp); //convert string to double and store in struct
+           }
+           else //loading into longitude
+           {
+               *(&boundary.lon1 + counter) = atof(temp); //convert string to double and store in struct
+           }
+        }
+    }
 }
 
  //****************************************************************************************************************

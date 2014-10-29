@@ -119,8 +119,8 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void manual(void);//manual mode
     double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
-    void load_info_get_modify(char *pair, char type[], char *flag);
-    void load_coordinate(char pair, int type);
+    void load_info_get_modify(int *pair, char type[], char *flag);
+    void load_coordinate(int pairnum, int type, char *flag);
     void LCD_rst(void);//clear and reset display screen
     double distance(int flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
