@@ -802,6 +802,17 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
          {
          }
 
+          //update the coordinates for the field end points(Simplified, assuming a square field)
+
+         x = Position.lat - pass.nav_to_lat + pass.nav_from_lat;//the new latitude coordinate to navigate to
+         y = Position.lon - pass.nav_to_lon + pass.nav_from_lon; //the new longitude coordinate to navigate to
+
+         //load updated line coordinates into the "current pass" struct
+         pass.nav_from_lat = Position.lat;//latitude traveling from
+         pass.nav_from_lon = Position.lon;//longitude traveling from
+         pass.nav_to_lat = x; //latitude traveling to
+         pass.nav_to_lon = y; //longitude traveling to
+
          pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 2<<10);//right side off
