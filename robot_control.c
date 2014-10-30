@@ -359,7 +359,6 @@ void print (int choice)
     else if (choice == 2)
     {
         LCD_rst ();
-<<<<<<< HEAD
         SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
     else if (choice == 3)
@@ -367,10 +366,8 @@ void print (int choice)
         LCD_rst ();
         SpiChnPutS (1, (unsigned int*)"Pass width:", 11);
         temp = boundary.width + '0'; //convert width to a char to write
-        SpiChnWriteC (1,(unsigned int*)temp); //write the current width setting of the robot to the display screen
-=======
+        //SpiChnWriteC (1,(unsigned char*)temp); //write the current width setting of the robot to the display screen
         SpiChnPutS (1,(unsigned int*)"GPS Signal\n Acquired",20);
->>>>>>> 46136f140ce0edb9fb1c4c3dab4452d23796cabb
     }
 }
 
@@ -634,6 +631,7 @@ void navigate_area_start (void)
  void manual (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
     char choice = '\0';
+    int flag = 0;
 
     while (choice != 'x') //while choice is not to exit
     {
@@ -667,7 +665,8 @@ void navigate_area_start (void)
         }
         else if (choice == 'r') //read data from GPS
         {
-            get_current_data (); //get the position data for the robot
+            traverse_boundary(flag); //record current position in boundary struct
+            flag++;
         }
         else if (choice == ' ') //stop key
         {
@@ -740,7 +739,7 @@ void navigate_area_start (void)
 
      putsUART2("\n\n\rWhich coordinate pair do you wish to enter(1-9)? Enter 'w' for robot width, enter x to exit.\t> "); //write to terminal and prompt for data
 
-    while (((pair != 'x') && (pair != 'w')) && (pair < '1') && (pair > '9')) // loop until something read into pair
+    while ((pair == '\0') || ((pair < '1') && (pair > '9'))) // loop until something read into pair
     {
         if (DataRdyUART2())
          {
@@ -762,7 +761,7 @@ void navigate_area_start (void)
 
      putsUART2("\n\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\t> "); //write to terminal and prompt for data
 
-     while ((type[0] != 'l') && ((type[1] != 'o') || (type[1] != 'a')) && ((type[2] != 'n') || type[2] != 't')) // loop until have "lat" or "lon"
+     do
      {
          if (DataRdyUART2())
          {
@@ -773,8 +772,15 @@ void navigate_area_start (void)
                  return; //exit helper
               }
               i++; //increment array index
+              if ((i == 3) && (type[0] != 'l') && ((type[1] != 'a') || (type[1] != 'o')) && ((type[2] != 'n') || (type[2] != 't')))
+              {
+                  type[2] = '\0';
+                  i = 0; //reset i
+                  putsUART2("\n\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\t> "); //write to terminal and prompt for data
+
+              }
          }
-     }
+     }while (type[2] == '\0'); // loop until have something
  }
 
  //****************************************************************************************************************
@@ -1017,4 +1023,32 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      //start externals
 
      PORTWrite(IOPORT_B, 3 << 10); //start robot going forward
+ }
+
+ //****************************************************************************************************************
+
+/*
+ * Function: traverse_boundary ()
+ * Author: Warren Seely
+ * Date Created: 10/30/14
+ * Date Last Modified: 10/30/14
+ * Discription: //for gathering the boundary coordinates by driving around the boundary.
+                //current position stored in boundary every time 'r' is hit
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ void traverse_boundary(int flag)
+ {
+     if (flag == 9) //check to see if 9 pairs read in already
+     {
+         SpiChnPutS(1,(unsigned int*)"Boundary full.", 14);
+         return;
+     }
+     flag = flag * 2; //change offset from (0-9) to (0-17)
+     get_current_data (); //get the position data for the robot
+     *(&boundary.lat1 + flag) = Position.lat; //update the current latitude and load into boundary
+     *(&boundary.lon1 + flag) = Position.lon; //update the current longitude and load into boundary
  }

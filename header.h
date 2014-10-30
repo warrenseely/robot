@@ -130,6 +130,8 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void compute_pass_point(void); //Compute the point to navigate to on current pass
     void start_guidance(void); //start the robot moving forward; Eventually check to make sure all external sensors
                                //working before continuing
+    void traverse_boundary(int flag); //for gathering the boundary coordinates by driving around the boundary.
+                                  //current position stored in boundary every time 'r' is hit
 
 #ifdef	__cplusplus
 }
