@@ -17,7 +17,8 @@
 void setupPORTs()
 {
     PORTSetPinsDigitalIn(IOPORT_A, BIT_6 | BIT_7); //setup buttons as inputs
-    PORTSetPinsDigitalOut(IOPORT_B, BIT_0 | BIT_10 | BIT_11 | BIT_12 | BIT_13); //PORTB 10-13 as robot controls
+    PORTSetPinsDigitalOut(IOPORT_B, BIT_10 | BIT_11 | BIT_12 | BIT_13); //PORTB 10-13 as robot movement controls
+    PORTSetPinsDigitalOut(IOPORT_E, BIT_0 | BIT_1 | BIT_2 | BIT_3 | BIT_4 | BIT_5 | BIT_6 | BIT_7); //boom nozzel monitoring
     PORTSetPinsDigitalOut(IOPORT_F, BIT_8|BIT_5); //UART TX pins
     PORTSetPinsDigitalIn(IOPORT_F, BIT_2|BIT_4|BIT_12); //UART RX pins and GPS status pin
     PORTSetPinsDigitalIn(IOPORT_D, BIT_3);//for GPS status monitoring
@@ -77,10 +78,18 @@ void setup_SPI1 (void)
 
 //****************************************************************************************************************
 
-/*void setupInt2(void)
+void setup_I2C(void)
 {
-    IPC2 = 6<<26; // IPC4 <28:26> for INT2; set priority to 6
-    INTCONSET = 1<<2; // Set INT2 rising edge trigger
-    INTCONSET = 1<<12;//multi-vector mode
-    IEC2 = 1;
-}*/
+    // I2C Port #1 - connected to pmod CLS
+	// RA14 SCL1/INT3/RA14	 N/A 	I2C Bus #1, J2, not shared with Pmod connector
+	// RA15 SDA1/INT4/RA15 	 N/A
+
+	PORTSetPinsDigitalOut (IOPORT_A, BIT_14 | BIT_15);
+}
+//void setupInt2(void)
+//{
+//    IPC2 = 6<<18; // IPC2 <18:20> for INT2; set priority to 6
+//    INTCONSET = 1<<2; // Set INT2 rising edge trigger
+//    INTCONSET = 1<<12; //multi-vector mode
+//    IEC0 = 1 << 13; //enable bit for Int2
+//}

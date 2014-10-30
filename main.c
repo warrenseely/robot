@@ -14,30 +14,17 @@
 # //***************************************************************************************************************************
 */
 
-//#include <plib.h>
 
 
 #include "header.h"
 
-/*Global variables*/
-
-//int width = 15;//width for robot(default)
 
 int main()
 {
-    //some temporary initializations for testing
-    boundary.lat1 = 46.725692;
-    boundary.lon1 = 117.162027;
-    boundary.lat2 = 46.726196;
-    boundary.lon2 = 117.162090;
-    boundary.lat3 = 46.726194;
-    boundary.lon3 = 117.161652;
-    boundary.lat4 = 46.725802;
-    boundary.lon4 = 117.161615;
     //local variables
     int i = 0;
     char temp ='\0';
-    //Note: LCD commands are in the print()
+    //Note: LCD commands are in print()
 
     boundary.width = 15; //initialize width
     reset(); //make sure robot functions are off                        //*********************************
@@ -56,38 +43,37 @@ int main()
         print(0); //setup screen and let user know waiting
         startup(); //choose auto/manual/info mode; only auto mode goes past here
         //interference on RD14
-        get_GPS_started();//if robot not at start area, calculate path to start area
-        //navigate_area_start();//if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
-        set_path(0); //set headings r     equired for back and forth; 0 indicates area heading, 1 indicates to/from area heading
+        get_GPS_started(); //wait here to make sure GPS has acquired signal
+        navigate_area_start(); //if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
+        set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
         pass.direction = 1; //set initial direction
         pass.D_heading = pass.Master; //desired initial heading is MAS_head
         start_guidance(); //start externals and start robot moving forward
-        while(1)//main program loop for auto mode
+
+        while(1) //main program loop for auto mode
         {
             get_current_data(); //current lat/lon/heading
             correct_path(); //keeps robot on line
 
             if (job_done()) //is robot finished?
             {
-                do //robot done and program finished
-                {
-
-                } while((PORTRead(IOPORT_A) & 0xC0) == 0); //loop until someone wakes robot again by pressing a button
+                sleep(); //wait until button pressed
                 break; //break out of the current while loop
             }
 
             field_end(); //is robot at field end? if yes then turn around
             //update field end coordinates here
-            delay (10);
-            //testing purposes
+            delay (10); //time to move before turning again
+            
             temp = U2RXREG; //read BT module
             if (temp == ' ') //check if any input from BT module
             {
                 shut_down(); //stop robot
+                sleep(); //wait until button pressed
             }
         }
     }
 
-    return 1;//should never actually reach here
+    return 1; //should never actually reach here
 }
 

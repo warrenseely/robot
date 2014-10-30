@@ -243,7 +243,7 @@ void set_path (int flag) //sets path between first 2 coordinate pairs for robot 
  */
 void get_current_data (void) //gets current lat/lon/speed and heading
 {
-    //GPS_DATA_T GPSdata;  //Struct to read the RMC data into
+    GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
     char temp = '\0';
     int flag = 0;   //Loop control flag
@@ -543,7 +543,7 @@ int job_done (void)
 void shut_down (void)    //stop robot, shut down booms
 {
     PORTWrite (IOPORT_B, 0); //shut off robot motors
-    //PORTWrite (IOPORT_A, 0);  //shut off other
+    PORTWrite (IOPORT_E, 0);  //shut off boom nozzels
     //Here incorporate remote message send to phone/command app
 }
 
@@ -600,18 +600,18 @@ void get_GPS_started (void)  //if robot is at location var1, skip. Else plot cou
 void navigate_area_start (void)
 {
     get_current_data (); //current lat/lon/heading
-    if ( (Position.lat == boundary.lat1) && 
-         (Position.lon == boundary.lon1) ) //if current position is correct, skip function
-    {
-        return; //exit function
-    }
-    set_path (1); //need to compute path from current to var1 coordinates
-    while ( (Position.lat != boundary.lat1) && 
-            (Position.lon != boundary.lon1) ) //while not at start destination
-    {
-        correct_path (); //guide robot
-        get_current_data (); //current lat/lon/heading
-    }
+//    if ( (Position.lat == boundary.lat1) &&
+//         (Position.lon == boundary.lon1) ) //if current position is correct, skip function
+//    {
+//        return; //exit function
+//    }
+//    set_path (1); //need to compute path from current to var1 coordinates
+//    while ( (Position.lat != boundary.lat1) &&
+//            (Position.lon != boundary.lon1) ) //while not at start destination
+//    {
+//        correct_path (); //guide robot
+//        get_current_data (); //current lat/lon/heading
+//    }
 }
 
 //****************************************************************************************************************
@@ -1021,7 +1021,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      //here check external sensors for valid feedback(working) before continuing
 
      //start externals
-
+     PORTWrite(IOPORT_E, 0xFF); //Enable boom nozzels
      PORTWrite(IOPORT_B, 3 << 10); //start robot going forward
  }
 
@@ -1051,4 +1051,27 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      get_current_data (); //get the position data for the robot
      *(&boundary.lat1 + flag) = Position.lat; //update the current latitude and load into boundary
      *(&boundary.lon1 + flag) = Position.lon; //update the current longitude and load into boundary
+ }
+
+ //****************************************************************************************************************
+
+/*
+ * Function: sleep ()
+ * Author: Warren Seely
+ * Date Created: 10/30/14
+ * Date Last Modified: 10/30/14
+ * Discription: wait in here until a button pressed. "Sleeping"
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ void sleep(void)
+ {
+     do
+    {
+
+    } while((PORTRead(IOPORT_A) & 0xC0) == 0); //loop until someone wakes robot again by pressing a button
+
  }
