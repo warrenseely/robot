@@ -346,10 +346,10 @@ void print (int choice)
         SpiChnPutS (1,(unsigned int*)"Begin Program",14);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"Awaiting input for mode",24);
+        SpiChnPutS (1,(unsigned int*)"Awaiting input\n for mode",24);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man Both:Info",26);
+        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man\n Both:Info",26);
     }
     else if (choice == 1)
     {
@@ -359,6 +359,7 @@ void print (int choice)
     else if (choice == 2)
     {
         LCD_rst ();
+<<<<<<< HEAD
         SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
     else if (choice == 3)
@@ -367,6 +368,9 @@ void print (int choice)
         SpiChnPutS (1, (unsigned int*)"Pass width:", 11);
         temp = boundary.width + '0'; //convert width to a char to write
         SpiChnWriteC (1,(unsigned int*)temp); //write the current width setting of the robot to the display screen
+=======
+        SpiChnPutS (1,(unsigned int*)"GPS Signal\n Acquired",20);
+>>>>>>> 46136f140ce0edb9fb1c4c3dab4452d23796cabb
     }
 }
 
@@ -734,7 +738,7 @@ void navigate_area_start (void)
      char pair = '\0';
      int i = 0;
 
-     putsUART2("\n\rWhich coordinate pair do you wish to enter(1-9)? Enter 'w' for robot width, enter x to exit.\n"); //write to terminal and prompt for data
+     putsUART2("\n\n\rWhich coordinate pair do you wish to enter(1-9)? Enter 'w' for robot width, enter x to exit.\t> "); //write to terminal and prompt for data
 
     while (((pair != 'x') && (pair != 'w')) && (pair < '1') && (pair > '9')) // loop until something read into pair
     {
@@ -756,7 +760,7 @@ void navigate_area_start (void)
 
      *pairnum = (pair - '0'); //send the pair number back as an integer
 
-     putsUART2("\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
+     putsUART2("\n\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\t> "); //write to terminal and prompt for data
 
      while ((type[0] != 'l') && ((type[1] != 'o') || (type[1] != 'a')) && ((type[2] != 'n') || type[2] != 't')) // loop until have "lat" or "lon"
      {
@@ -794,7 +798,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
     pairnum = (pairnum - 1) * 2; //convert pairnum (from 1-9) to a number (from 0-17) to use as the struct address offset
 
-    putsUART2("\n\rEnter the number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
+    putsUART2("\n\n\rEnter the number followed by a comma(Maximum of 19 characters). Enter x to exit.\t> "); //write to terminal and prompt for data
 
     do
     {
