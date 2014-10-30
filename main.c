@@ -21,7 +21,7 @@
 
 /*Global variables*/
 
-int width = 15;//width for robot(default)
+//int width = 15;//width for robot(default)
 
 int main()
 {
