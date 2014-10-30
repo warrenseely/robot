@@ -6,7 +6,7 @@
 #// ***************************************************************************************************************************
 
 #//*********INFORMATION**********************************************************************************************
-#//redo correct_path so works on all lines every width-->create c_pass[4] for storing lat/lon every width across area;also pass into set_path
+#//redo correct_path so works on all lines every width
 #//load_info set up for BT2, in port JH(uart2)
 #//GPS set up in port JE(uart1)
 #//For screen on UART: MD0,MD2 are shorted; for screen on SPI: MD0 is shorted, Jp1 SS is shorted;
@@ -431,12 +431,13 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
     int state;  //declare
     while (1)
     {
-
         state = 0;  //initialize to 0
         while (state == 0)  //wait until a button is pressed
         {
             state = PORTRead (IOPORT_A) & 0xC0;  //current state of port A
         }
+        delay(1); //short delay to give time to press both buttons
+        state =PORTRead (IOPORT_A) & 0xC0; //read the buttons
 
         if (state == 0x40)  //button 1 pressed(auto mode)
         {
@@ -656,10 +657,9 @@ void navigate_area_start (void)
             //putsUART1 ("exit");
             SpiChnPutS (1, (unsigned int*)"exit", 5);
         }
-        else if (choice == 'r')
+        else if (choice == 'r') //read data from GPS
         {
-            get_current_data ();
-            choice = choice; //VITALLY IMPORTANT
+            get_current_data (); //get the position data for the robot
         }
         else if (choice == ' ') //stop key
         {
@@ -684,7 +684,7 @@ void navigate_area_start (void)
  void load_info(void) //get coordinates from BT2 module; x is exit info mode
  {                   
     char type[3] = {'\0'}, flag = '\0'; //temps to hold selection number
-    int i = 1, pairnum = 0; //i set to 1 as default(longitude)
+    int i = 0, pairnum = 0; //i set to 1 as default(latitude)
         
     do
     {
@@ -693,9 +693,17 @@ void navigate_area_start (void)
         {
             break;
         }
+        else if (flag == 'w') //load into robot width
+        {
+            i = -1; //set flag
+        }
         if (type[1] == 'a') //if "lat" entered, type[1] is an 'a'; if "lon" entered, type[1] is an 'o'
         {
             i = 0; //if latitude, set i to 0 and pass
+        }
+        else
+        {
+            i = 1; //Only other option is longitude
         }
 
         load_coordinate(pairnum, i, &flag); //get the coordinate number and load into appropriate location in struct
@@ -706,46 +714,76 @@ void navigate_area_start (void)
 
 //****************************************************************************************************************
 
+ /*
+ * Function: load_info_get_modify ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: Gets coordinate pair number(1-9), and whether latitude or longitude from BT2 module; x is exit info mode
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
  void load_info_get_modify(int *pairnum, char type[], char *flag) //gets the coordinate pair, and if it is latitude or longitude
  {
      char pair = '\0';
      int i = 0;
 
-     putsUART2("\n\rWhich coordinate pair do you wish to enter(1-9). Enter x to exit.\n"); //write to terminal and prompt for data
+     putsUART2("\n\rWhich coordinate pair do you wish to enter(1-9)? Enter 'w' for robot width, enter x to exit.\n"); //write to terminal and prompt for data
 
-    while (pair == '\0') // loop until something read into pair
+    while (((pair != 'x') || (pair != 'w')) && (pair < '1') && (pair > '9')) // loop until something read into pair
     {
         if (DataRdyUART2())
          {
              pair = U2RXREG; //get coordinate pair to modify
+             U2TXREG = pair; //echo character back
              if (pair == 'x')
              {
-                *flag = 'x';
-                return; //exit helper
+                 *flag = 'x';
+                 return; //exit helper
+             }
+             else if (pair == 'w')
+             {
+                 *flag = 'w';
+                 return;
              }
          }
     }
 
      *pairnum = (pair - '0'); //send the pair number back as an integer
 
-        putsUART2("\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
+     putsUART2("\n\rModifying latitude or longitude? (Enter lat or lon). Enter x to exit.\n"); //write to terminal and prompt for data
 
-        while (type[2] == '\0') // loop until have "lat" or "lon"
-        {
-            if (DataRdyUART2())
-             {
-                 type[i] = U2RXREG; //get first char; latitude/longitude to modify
-                 if (type[i] == 'x')
-                 {
-                    *flag = 'x';
-                    return; //exit helper
-                 }
-                 i++; //increment array index
-             }            
-        }
+     while ((type[0] != 'l') && ((type[1] != 'o') || (type[1] != 'a')) && ((type[2] != 'n') || type[2] != 't')) // loop until have "lat" or "lon"
+     {
+         if (DataRdyUART2())
+         {
+              type[i] = U2RXREG; //get first char; latitude/longitude to modify
+              U2TXREG = type[i]; //echo character back
+              if (type[i] == 'x')
+              {
+                 *flag = 'x';
+                 return; //exit helper
+              }
+              i++; //increment array index
+         }
+     }
  }
 
  //****************************************************************************************************************
+
+ /*
+ * Function: load_coordinate ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: loads the coordinate number from BT2 module; x is exit info mode
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
 
 void load_coordinate(int pairnum, int i, char *flag) //actually load the coordinate information
 {
@@ -754,14 +792,14 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
     pairnum = (pairnum - 1) * 2; //convert pairnum (from 1-9) to a number (from 0-17) to use as the struct address offset
 
-    putsUART2("\n\rEnter the coordinate number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
+    putsUART2("\n\rEnter the number followed by a comma(Maximum of 19 characters). Enter x to exit.\n"); //write to terminal and prompt for data
 
     do
     {
         if (DataRdyUART2()) //new data ready
         {
             temp1 = U2RXREG; //copy data to variable
-
+            U2TXREG = temp1; //echo character back
             if (temp1 == 'x') //exit command
             {
                 *flag = 'x'; //set exit flag
@@ -774,6 +812,12 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
             }
         }
     }while(temp1 != ','); // End of number string signaled by a comma
+
+    if (i == -1) //If i is -1, know to load the width
+    {
+        boundary.width = atoi(temp); //load into width
+        return;
+    }
 
     for (counter = 0; counter < 18; counter++) //loop to check which coordinate pair to load into
     {
@@ -794,118 +838,154 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
  //****************************************************************************************************************
 
+/*
+ * Function: field_end ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: check if robot is at the end of pass; if yes, turn around
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
  double field_end(void)
  {
-     int flag = 0, x, y;
+     int flag = 0, x = 0, y = 0;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
-     if((Position.lat != pass.nav_to_lat) && (Position.lon != pass.nav_to_lon))
+     if ((Position.lat != pass.nav_to_lat) && (Position.lon != pass.nav_to_lon))
      {
          return;
      }
 
-     if(pass.direction == 1)//if current direction is initial direction
+     if (pass.direction == 1) //if current direction is initial direction
      {
-         int x = 0;
-         PORTWrite(IOPORT_B, 2<<10);//right side off
-         pass.D_heading += 90;//add 90 degrees
-         while(x > 0)// loop until C_heading = D_heading + 90
+         PORTWrite(IOPORT_B, 2<<10); //right side off
+         pass.D_heading += 90; //add 90 degrees
+         while(x > 0) // loop until C_heading = D_heading + 90
          {
-             get_current_data();//get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course;//subtract to compare
+             get_current_data(); //get current heading, mainly going for compass heading here
+             x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
+         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
 
-         while(distance(flag) < width)//wait until traveled width
+         while(distance(flag) < width) //wait until traveled width
          {
          }
 
           //update the coordinates for the field end points(Simplified, assuming a square field)
-
-         x = Position.lat - pass.nav_to_lat + pass.nav_from_lat;//the new latitude coordinate to navigate to
-         y = Position.lon - pass.nav_to_lon + pass.nav_from_lon; //the new longitude coordinate to navigate to
-
-         //load updated line coordinates into the "current pass" struct
-         pass.nav_from_lat = Position.lat;//latitude traveling from
-         pass.nav_from_lon = Position.lon;//longitude traveling from
-         pass.nav_to_lat = x; //latitude traveling to
-         pass.nav_to_lon = y; //longitude traveling to
+         compute_pass_point();
 
          pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 2<<10);//right side off
+         PORTWrite(IOPORT_B, 2<<10); //right side off
 
-         while(x > 0)// loop until C_heading = MAS_hed1
+         while(x > 0) // loop until C_heading = MAS_hed1
          {
-             get_current_data();//get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course;//subtract to compare
+             get_current_data(); //get current heading, mainly going for compass heading here
+             x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
+         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
          pass.direction = 0; //update direction
      }
-     else//current direction is secondary direction
+     else //current direction is secondary direction
      {
-         int x = 0;
-         PORTWrite(IOPORT_B, 1<<10);//left side off
-         pass.D_heading -= 90;//subtract 90 degrees
+         x = 0;
+         PORTWrite(IOPORT_B, 1<<10); //left side off
+         pass.D_heading -= 90; //subtract 90 degrees
 
-         while(x > 0)// loop until course = D_heading - 90
+         while(x > 0) // loop until course = D_heading - 90
          {
-             get_current_data();//get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course;//subtract to compare
+             get_current_data(); //get current heading, mainly going for compass heading here
+             x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
-         flag = 0;//reset flag
-         while(distance(flag) < width)//wait until traveled width
+         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
+         flag = 0; //reset flag
+         while(distance(flag) < width) //wait until traveled width
          {
          }
 
          //update the coordinates for the field end points(Simplified, assuming a square field)
-
-         x = Position.lat - pass.nav_to_lat + pass.nav_from_lat;//the new latitude coordinate to navigate to
-         y = Position.lon - pass.nav_to_lon + pass.nav_from_lon; //the new longitude coordinate to navigate to
-
-         //load updated line coordinates into the "current pass" struct
-         pass.nav_from_lat = Position.lat;//latitude traveling from
-         pass.nav_from_lon = Position.lon;//longitude traveling from
-         pass.nav_to_lat = x; //latitude traveling to
-         pass.nav_to_lon = y; //longitude traveling to
+         compute_pass_point();
          
          pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 1<<10);//left side off
+         PORTWrite(IOPORT_B, 1<<10); //left side off
 
-         while(x > 0)// loop until course = desired heading
+         while(x > 0) // loop until course = desired heading
          {
-             get_current_data();//get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course;//subtract to compare
+             get_current_data(); //get current heading, mainly going for compass heading here
+             x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10);//turned desired amount, continue
+         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
          pass.direction = 1; //update direction
      }
  }
 
+ //****************************************************************************************************************
 
- double distance(int flag)//computes distance from initial call until current call; set flag = 0 before initial call;
+/*
+ * Function: comput_pass_point ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: Compute the point to navigate to on current pass
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ void compute_pass_point()
+ {
+     double x, y;
+
+     x = Position.lat - pass.nav_to_lat + pass.nav_from_lat; //the new latitude coordinate to navigate to
+     y = Position.lon - pass.nav_to_lon + pass.nav_from_lon; //the new longitude coordinate to navigate to
+
+     //load updated line coordinates into the "current pass" struct
+     pass.nav_from_lat = Position.lat; //latitude traveling from
+     pass.nav_from_lon = Position.lon; //longitude traveling from
+     pass.nav_to_lat = x; //latitude traveling to
+     pass.nav_to_lon = y; //longitude traveling to
+ }
+
+//****************************************************************************************************************
+
+/*
+ * Function: distance ()
+ * Author: Warren Seely
+ * Date Created: 10/29/14
+ * Date Last Modified: 10/29/14
+ * Discription: Compute distance traveled from initial call to current call.
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ double distance(int flag) //computes distance from initial call until current call; set flag = 0 before initial call;
  {                          //used with loop, returns distance
-     double c1, c2 = 0, clat2 = 0, clon2 = 0, d = 0;//temps for latitude, longitude, distance
+     double c1, c2 = 0, clat2 = 0, clon2 = 0, d = 0; //temps for latitude, longitude, distance
 
-     if(flag == 0)//first time, copy current(start) location and get start coordinate
+     if (flag == 0) //first time, copy current(start) location and get start coordinate
      {
-        pass.clat1 = Position.lat;//copy Position.lat, Position.lon; preserve
+        pass.clat1 = Position.lat; //copy Position.lat, Position.lon; preserve
         pass.clon1 = Position.lon;
      }
 
-     get_current_data();//get current position
-     clat2 = Position.lat;//copy Position.lat, Position.lon
+     get_current_data(); //get current position
+     clat2 = Position.lat; //copy Position.lat, Position.lon
      clon2 = Position.lon;
 
-     c1 = pow((pass.clat1 - clat2), 2);//get "x" coordinates
-     c2 = pow((pass.clon1 - clon2), 2);//get "y" coordinates
+     c1 = pow((pass.clat1 - clat2), 2); //get "x" coordinates
+     c2 = pow((pass.clon1 - clon2), 2); //get "y" coordinates
 
-     d = sqrt(c1 + c2);//current distance
-     flag = 1;//set flag
+     d = sqrt(c1 + c2); //current distance
+     flag = 1; //set flag
 
-     return d;//current distance
+     return d; //current distance
  }

@@ -63,6 +63,7 @@ struct BOUNDARY//base for containing the area boundary
     double lon8;
     double lat9;
     double lon9;
+    int width; //currently present in load_info() but not utilized
 };
 
 struct GPS_TRANS//base for containing the current robot position
@@ -126,6 +127,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     double distance(int flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
     void setup_SPI1 (void);
+    void compute_pass_point(void); //Compute the point to navigate to on current pass
 
 #ifdef	__cplusplus
 }

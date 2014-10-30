@@ -21,10 +21,11 @@
 
 /*Global variables*/
 
-int width = 15;//width for robot(default) ADD INTO load_info later
+int width = 15;//width for robot(default)
 
 int main()
 {
+    //some temporary initializations for testing
     boundary.lat1 = 46.725692;
     boundary.lon1 = 117.162027;
     boundary.lat2 = 46.726196;
@@ -35,6 +36,7 @@ int main()
     boundary.lon4 = 117.161615;
     //local variables
     int i = 0;
+    char temp ='\0';
     //Note: LCD commands are in the print()
 
     reset(); //make sure robot functions are off                        //*********************************
@@ -61,21 +63,27 @@ int main()
 
         while(1)//main program loop for auto mode
         {
-            get_current_data();//current lat/lon/heading
+            get_current_data(); //current lat/lon/heading
             correct_path(); //keeps robot on line
 
-            if (job_done())//is robot finished?
+            if (job_done()) //is robot finished?
             {
-                do//robot done and program finished
+                do //robot done and program finished
                 {
 
-                } while((PORTRead(IOPORT_A) & 0xC0) == 0);//loop until someone wakes robot again by pressing a button
-                break;//break out of the current while loop
+                } while((PORTRead(IOPORT_A) & 0xC0) == 0); //loop until someone wakes robot again by pressing a button
+                break; //break out of the current while loop
             }
 
-            field_end();//is robot at field end? if yes then turn around
+            field_end(); //is robot at field end? if yes then turn around
             //update field end coordinates here
             delay (10);
+            //testing purposes
+            temp = U2RXREG; //read BT module
+            if (temp == ' ') //check if any input from BT module
+            {
+                shut_down(); //stop robot
+            }
         }
     }
 
