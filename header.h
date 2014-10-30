@@ -74,13 +74,13 @@ struct GPS_TRANS//base for containing the current robot position
     double date;
 };
 
-struct GPS_DATA_T //85 long; base for containing the GPS string
+struct GPS_DATA_T  //85 long; base for containing the GPS string
 {
 
     char ID[6];
     char UTC_time[11];
     char STATUS[2];
-    char LAT[8];
+    char LAT[10];
     char N_S_indicator[2];
     char LON[11];
     char E_W_indicator[2];
@@ -95,6 +95,7 @@ struct GPS_DATA_T //85 long; base for containing the GPS string
 
 };
 
+struct GPS_DATA_T GPSdata;
 struct GPS_TRANS Position;//define struct to hold robot current position
 struct BOUNDARY boundary;//define struct to hold the coverage boundary coordinates
 struct PASS_INFO pass;//define struct to contain information for each pass

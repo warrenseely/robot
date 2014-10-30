@@ -37,7 +37,7 @@
  */
 void correct_path (void)
 {
-    int x = 0, y = 0, z = 0;
+    double x = 0, y = 0, z = 0;
 
 
 //weaties was here bwhahaha
@@ -56,7 +56,7 @@ void correct_path (void)
     }
 
     z = atan (x/y); //get heading, use this to compare to north and desired heading
-    z = (180/3.14159) * z;  //convert to degrees
+    z = ((double)180/3.14159) * z;  //convert to degrees
     if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
         x = pass.D_heading - z;  //subtract heading here to compare
@@ -94,7 +94,7 @@ void correct_path (void)
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
         }
-        else    //x = 0; need to check headingand make sure it is correct(Think position is correct, but robot going 90deg)
+        else    //x = 0; need to check heading and make sure it is correct(Think position is correct, but robot going 90deg)
         {
 
         }
@@ -243,7 +243,7 @@ void set_path (int flag) //sets path between first 2 coordinate pairs for robot 
  */
 void get_current_data (void) //gets current lat/lon/speed and heading
 {
-    struct GPS_DATA_T GPSdata;  //Struct to read the RMC data into
+    //GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
     char temp = '\0';
     int flag = 0;   //Loop control flag
@@ -276,8 +276,8 @@ void get_current_data (void) //gets current lat/lon/speed and heading
 
    //Translate GPS data into usable form by
    //converting to a string, then to a double, then storing.
-   Position.lat = strtod(GPSdata.LAT,NULL);
-   Position.lon = strtod(GPSdata.LON,NULL);
+   Position.lat = strtod(GPSdata.LAT,NULL)/100;
+   Position.lon = strtod(GPSdata.LON,NULL)/100;
    Position.time = strtod(GPSdata.UTC_time,NULL);
    Position.date = strtod(GPSdata.Date,NULL);
    Position.course = strtod(GPSdata.Course_over_ground,NULL);
@@ -302,14 +302,14 @@ void read_GPS_fields (char * address)
     char temp = '\0';
     int index = 0;
 
-    while (index < 86)   //loop until end of struct
+    while (index < 88)   //loop until end of struct
     {
 
         UART1ClearAllErrors (); //clear overflow errors
         if (DataRdyUART1()) //new data ready?
         {
             temp = U1RXREG; //get a character
-            if(temp != ',') //if not the comma seperators between fields
+            if((temp != ',') && (temp != '-')) //if not the comma seperators between fields
             {
                 *(address + index) = temp;  //load data into struct fields
                 index++;    //increment
@@ -656,7 +656,12 @@ void navigate_area_start (void)
             //putsUART1 ("exit");
             SpiChnPutS (1, (unsigned int*)"exit", 5);
         }
-        if (choice == ' ') //stop key
+        else if (choice == 'r')
+        {
+            get_current_data ();
+            choice = choice; //VITALLY IMPORTANT
+        }
+        else if (choice == ' ') //stop key
         {
             PORTWrite (IOPORT_B, 0); //stop
         }

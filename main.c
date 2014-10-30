@@ -25,14 +25,14 @@ int width = 15;//width for robot(default) ADD INTO load_info later
 
 int main()
 {
-   /* boundary.lat1 = 46.725692;
+    boundary.lat1 = 46.725692;
     boundary.lon1 = 117.162027;
     boundary.lat2 = 46.726196;
     boundary.lon2 = 117.162090;
     boundary.lat3 = 46.726194;
     boundary.lon3 = 117.161652;
     boundary.lat4 = 46.725802;
-    boundary.lon4 = 117.161615;*/
+    boundary.lon4 = 117.161615;
     //local variables
     int i = 0;
     //Note: LCD commands are in the print()
@@ -75,6 +75,7 @@ int main()
 
             field_end();//is robot at field end? if yes then turn around
             //update field end coordinates here
+            delay (10);
         }
     }
 
