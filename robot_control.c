@@ -339,6 +339,7 @@ void read_GPS_fields (char * address)
  */
 void print (int choice)
 {
+    char temp;
     if (choice == 0)
     {
         LCD_rst ();
@@ -353,17 +354,20 @@ void print (int choice)
     else if (choice == 1)
     {
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"Acquiring GPS \nSignal",20);
+        SpiChnPutS (1,(unsigned int*)"Acquiring GPS Signal",20);
     }
     else if (choice == 2)
     {
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",20);
+        SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
-//    else if (choice == 3)
-//    {
-//        //Nothing here yet.
-//    }
+    else if (choice == 3)
+    {
+        LCD_rst ();
+        SpiChnPutS (1, (unsigned int*)"Pass width:", 11);
+        temp = boundary.width + '0'; //convert width to a char to write
+        SpiChnWriteC (1,(unsigned int*)temp); //write the current width setting of the robot to the display screen
+    }
 }
 
 //****************************************************************************************************************
@@ -436,7 +440,7 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
         {
             state = PORTRead (IOPORT_A) & 0xC0;  //current state of port A
         }
-        delay(1); //short delay to give time to press both buttons
+        delay(3); //short delay to give time to press both buttons
         state =PORTRead (IOPORT_A) & 0xC0; //read the buttons
 
         if (state == 0x40)  //button 1 pressed(auto mode)
@@ -561,20 +565,20 @@ void get_GPS_started (void)  //if robot is at location var1, skip. Else plot cou
     int flag = 0,temp = 0;
 
     print(1);   //let user know GPS being acquired
-    //may implement an interrupt here for the GPS instead. Enable it here?
-    while (flag < 10000)    //wait for GPS to acquire signal; sampling a pulsing signal
-    {
-        temp = PORTRead (IOPORT_D) & 1 << 3;
-        if (temp == 0)   //get current status of GPS
-        {
-            //delay (1);    //wait for some time
-            flag++; //increment flag
-        }
-        else
-        {
-            flag = 0;   //reset flag
-        }
-    }
+//    //may implement an interrupt here for the GPS instead. Enable it here?
+//    while (flag < 10000)    //wait for GPS to acquire signal; sampling a pulsing signal
+//    {
+//        temp = PORTRead (IOPORT_D) & 1 << 3;
+//        if (temp == 0)   //get current status of GPS
+//        {
+//            //delay (1);    //wait for some time
+//            flag++; //increment flag
+//        }
+//        else
+//        {
+//            flag = 0;   //reset flag
+//        }
+//    }
     print (2);  //let user know GPS acquired
     //delay (2);
 }
@@ -732,12 +736,11 @@ void navigate_area_start (void)
 
      putsUART2("\n\rWhich coordinate pair do you wish to enter(1-9)? Enter 'w' for robot width, enter x to exit.\n"); //write to terminal and prompt for data
 
-    while (((pair != 'x') || (pair != 'w')) && (pair < '1') && (pair > '9')) // loop until something read into pair
+    while (((pair != 'x') && (pair != 'w')) && (pair < '1') && (pair > '9')) // loop until something read into pair
     {
         if (DataRdyUART2())
          {
              pair = U2RXREG; //get coordinate pair to modify
-             U2TXREG = pair; //echo character back
              if (pair == 'x')
              {
                  *flag = 'x';
@@ -760,7 +763,6 @@ void navigate_area_start (void)
          if (DataRdyUART2())
          {
               type[i] = U2RXREG; //get first char; latitude/longitude to modify
-              U2TXREG = type[i]; //echo character back
               if (type[i] == 'x')
               {
                  *flag = 'x';
@@ -799,7 +801,6 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
         if (DataRdyUART2()) //new data ready
         {
             temp1 = U2RXREG; //copy data to variable
-            U2TXREG = temp1; //echo character back
             if (temp1 == 'x') //exit command
             {
                 *flag = 'x'; //set exit flag
@@ -872,7 +873,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
          }
          PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
 
-         while(distance(flag) < width) //wait until traveled width
+         while(distance(flag) < boundary.width) //wait until traveled width
          {
          }
 
@@ -904,7 +905,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
          }
          PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
          flag = 0; //reset flag
-         while(distance(flag) < width) //wait until traveled width
+         while(distance(flag) < boundary.width) //wait until traveled width
          {
          }
 
@@ -988,4 +989,28 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      flag = 1; //set flag
 
      return d; //current distance
+ }
+
+ //****************************************************************************************************************
+
+/*
+ * Function: start_guidance ()
+ * Author: Warren Seely
+ * Date Created: 10/30/14
+ * Date Last Modified: 10/30/14
+ * Discription: //start the robot moving forward; Eventually check to make sure all external sensors
+                //working before continuing
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ void start_guidance(void)
+ {
+     //here check external sensors for valid feedback(working) before continuing
+
+     //start externals
+
+     PORTWrite(IOPORT_B, 3 << 10); //start robot going forward
  }
