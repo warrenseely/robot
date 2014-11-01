@@ -28,8 +28,14 @@ void setupPORTs()
 	   SCK1 - Ouput - RD10
 	   SS1  - Output - RD9 */
 
-	PORTSetPinsDigitalOut (IOPORT_D, BIT_0 | BIT_9 | BIT_10);
-	PORTSetPinsDigitalIn (IOPORT_C, BIT_4);
+    PORTSetPinsDigitalOut (IOPORT_D, BIT_0 | BIT_9 | BIT_10);
+    PORTSetPinsDigitalIn (IOPORT_C, BIT_4);
+
+    // I2C Port #1 - connected to pmod CLS
+    // RA14 SCL1/INT3/RA14	 N/A 	I2C Bus #1, J2, not shared with Pmod connector
+    // RA15 SDA1/INT4/RA15 	 N/A
+
+    PORTSetPinsDigitalOut (IOPORT_A, BIT_14 | BIT_15);
 }
 
 //****************************************************************************************************************
@@ -80,11 +86,7 @@ void setup_SPI1 (void)
 
 void setup_I2C(void)
 {
-    // I2C Port #1 - connected to pmod CLS
-	// RA14 SCL1/INT3/RA14	 N/A 	I2C Bus #1, J2, not shared with Pmod connector
-	// RA15 SDA1/INT4/RA15 	 N/A
-
-	PORTSetPinsDigitalOut (IOPORT_A, BIT_14 | BIT_15);
+    
 }
 //void setupInt2(void)
 //{

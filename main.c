@@ -25,6 +25,12 @@ int main()
     int i = 0;
     char temp ='\0';
     //Note: LCD commands are in print()
+    boundary.lat1 = 46.435394;
+    boundary.lon1 = 117.0973;
+    boundary.lat2 = 46.435402;
+    boundary.lon2 = 117.097305;
+    boundary.lat3 = 46.43557;
+    boundary.lon3 = 117.09721;
 
     boundary.width = 15; //initialize width
     reset(); //make sure robot functions are off                        //*********************************
@@ -33,7 +39,7 @@ int main()
     setupPORTs(); //Initialize pin RF8 as digital output                //*                                *
     setup_SPI1(); //Initialize the SPI1 module for screen communication //**********************************
 
-    for(i = 0; i <= 3;i++)
+    for(i = 0; i <= 3; i++)
     {
         *(&pass.nav_from_lat + i) = *(&boundary.lat1 + i); //copy first 2 coordinate pairs of boundary for first pass coordinates
     }
@@ -65,12 +71,12 @@ int main()
             //update field end coordinates here
             delay (10); //time to move before turning again
             
-            temp = U2RXREG; //read BT module
-            if (temp == ' ') //check if any input from BT module
-            {
-                shut_down(); //stop robot
-                sleep(); //wait until button pressed
-            }
+//            temp = U2RXREG; //read BT module
+//            if (temp == ' ') //check if any input from BT module
+//            {
+//                shut_down(); //stop robot
+//                sleep(); //wait until button pressed
+//            }
         }
     }
 

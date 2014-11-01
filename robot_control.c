@@ -43,13 +43,13 @@ void correct_path (void)
 //weaties was here bwhahaha
 
 
-    x = boundary.lat1 - Position.lat; //difference in the latitudes
+    x = pass.nav_from_lat - Position.lat; //difference in the latitudes
     if (x < 0)
     {
         x = x * (-1);   //make sure x is positive
     }
 
-    y = boundary.lon1 - Position.lon;   //difference in the longitudes
+    y = pass.nav_from_lon - Position.lon;   //difference in the longitudes
     if (y < 0)
     {
         y = y * (-1);   //make sure y is positive
@@ -867,7 +867,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
-     if ((Position.lat != pass.nav_to_lat) && (Position.lon != pass.nav_to_lon))
+     if ((Position.lat != pass.nav_to_lat) || (Position.lon != pass.nav_to_lon))
      {
          return;
      }
