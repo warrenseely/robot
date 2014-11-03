@@ -108,7 +108,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void setup_UART1(void);//communication for the display screen
     void correct_path(void);
     void setup_UART2(void);//communication for the GPS receiver
-    void get_current_data(void);//get current lat/lon/heading from GPS
+    char get_current_data(void);//get current lat/lon/heading from GPS
     void read_GPS_fields(char * address); //Reads gps string to a comma, stores in struct pointed to by *address
     void print(int choice);//print desired string
     void startup(void);//beginning program function; use to select mode, and maybe other?

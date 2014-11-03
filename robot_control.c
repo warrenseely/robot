@@ -234,7 +234,7 @@ void set_path (int flag) //sets path between first 2 coordinate pairs for robot 
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void get_current_data (void) //gets current lat/lon/speed and heading
+char get_current_data (void) //gets current lat/lon/speed and heading
 {
     GPS_DATA_T GPSdata;  //Struct to read the RMC data into
 
@@ -274,6 +274,8 @@ void get_current_data (void) //gets current lat/lon/speed and heading
    Position.time = strtod(GPSdata.UTC_time,NULL);
    Position.date = strtod(GPSdata.Date,NULL);
    Position.course = strtod(GPSdata.Course_over_ground,NULL);
+
+   return GPSdata.STATUS; //used during startup to determine if connected
 }
 
 //****************************************************************************************************************
@@ -339,10 +341,10 @@ void print (int choice)
         SpiChnPutS (1,(unsigned int*)"Begin Program",14);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"Awaiting input\n for mode",24);
+        SpiChnPutS (1,(unsigned int*)"Awaiting input for mode",23);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man\n Both:Info",26);
+        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man Both:Info",25);
     }
     else if (choice == 1)
     {
@@ -360,7 +362,7 @@ void print (int choice)
         SpiChnPutS (1, (unsigned int*)"Pass width:", 11);
         temp = boundary.width + '0'; //convert width to a char to write
         //SpiChnWriteC (1,(unsigned char*)temp); //write the current width setting of the robot to the display screen
-        SpiChnPutS (1,(unsigned int*)"GPS Signal\n Acquired",20);
+        SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
 }
 
@@ -556,23 +558,11 @@ void shut_down (void)    //stop robot, shut down booms
  */
 void get_GPS_started (void)  //if robot is at location var1, skip. Else plot course to get to location var1
 {
-    int flag = 0,temp = 0;
 
     print(1);   //let user know GPS being acquired
-//    //may implement an interrupt here for the GPS instead. Enable it here?
-//    while (flag < 10000)    //wait for GPS to acquire signal; sampling a pulsing signal
-//    {
-//        temp = PORTRead (IOPORT_D) & 1 << 3;
-//        if (temp == 0)   //get current status of GPS
-//        {
-//            //delay (1);    //wait for some time
-//            flag++; //increment flag
-//        }
-//        else
-//        {
-//            flag = 0;   //reset flag
-//        }
-//    }
+
+    while(get_current_data() != 'A'); //If it returns an 'A', GPS is connected
+
     print (2);  //let user know GPS acquired
     //delay (2);
 }
@@ -857,7 +847,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
 
  double field_end(void)
  {
-     int flag = 0, x = 0, y = 0;
+     int flag = 0, x = 1;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
@@ -898,7 +888,6 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      }
      else //current direction is secondary direction
      {
-         x = 0;
          PORTWrite(IOPORT_B, 1<<10); //left side off
          pass.D_heading -= 90; //subtract 90 degrees
 
