@@ -44,30 +44,23 @@ void correct_path (void)
 
 
     x = pass.nav_from_lat - Position.lat; //difference in the latitudes
-    if (x < 0)
-    {
-        x = x * (-1);   //make sure x is positive
-    }
 
     y = pass.nav_from_lon - Position.lon;   //difference in the longitudes
-    if (y < 0)
-    {
-        y = y * (-1);   //make sure y is positive
-    }
 
-    z = atan (x/y); //get heading, use this to compare to north and desired heading
+    z = atan (x/y); //get position heading, use this to compare to north and desired heading
     z = ((double)180/3.14159) * z;  //convert to degrees
+    
     if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
         x = pass.D_heading - z;  //subtract heading here to compare
 
-        if (x > 0)  //go right
+        if (x > pass.D_heading)  //go right
         {
             PORTWrite (IOPORT_B, 2<<10);    //right side off, left side on
             delay (1);  //time to turn
             PORTWrite (IOPORT_B, 3<<10);    //both back on
         }
-        else if(x < 0)  //go left
+        else if(x < pass.D_heading)  //go left
         {
             PORTWrite (IOPORT_B, 1<<10);    //left side off, right side on
             delay (1);  //time to turn
@@ -82,13 +75,13 @@ void correct_path (void)
     {
         x = pass.D_heading - z;  //subtract heading here to compare
 
-        if(x < 0)   //go left
+        if(x < pass.D_heading)   //go left
         {
             PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
             delay(5); //time to turn
             PORTWrite(IOPORT_B, 3<<10); //both back on
         }
-        else if(x > 0)  //go right
+        else if(x > pass.D_heading)  //go right
         {
             PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
             delay(5); //time to turn
@@ -309,12 +302,12 @@ void read_GPS_fields (char * address)
         if (DataRdyUART1()) //new data ready?
         {
             temp = U1RXREG; //get a character
-            if((temp != ',') && (temp != '-')) //if not the comma seperators between fields
+            if ((temp != ',') && (temp != '-')) //if not the comma seperators between fields
             {
                 *(address + index) = temp;  //load data into struct fields
                 index++;    //increment
             }
-            else    //if a comma is found, instead populate with NULL to make it a string
+            else if (temp == ',')   //if a comma is found, instead populate with NULL to make it a string
             {
                 *(address + index) = '\0';  //assign a NULL to make string
                 index++;    //increment
@@ -639,7 +632,7 @@ void navigate_area_start (void)
         {
             choice = U2RXREG; //copy to variable
            // U1TXREG = choice; //write to screen(optional)
-        }
+        //}
 
         if (choice == 'd') //right key
         {
@@ -671,6 +664,7 @@ void navigate_area_start (void)
         else if (choice == ' ') //stop key
         {
             PORTWrite (IOPORT_B, 0); //stop
+        }
         }
     }
  }
