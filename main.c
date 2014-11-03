@@ -23,14 +23,14 @@ int main()
 {
     //local variables
     int i = 0;
-    char temp ='\0';
+
     //Note: LCD commands are in print()
     boundary.lat1 = 46.435394;
-    boundary.lon1 = 117.0973;
-    boundary.lat2 = 46.435402;
-    boundary.lon2 = 117.097305;
-    boundary.lat3 = 46.43557;
-    boundary.lon3 = 117.09721;
+    boundary.lon1 = 117.09728;
+    boundary.lat2 = 46.435577;
+    boundary.lon2 = 117.09727;
+    boundary.lat3 = 46.435566;
+    boundary.lon3 = 117.09707;
 
     boundary.width = 15; //initialize width
     reset(); //make sure robot functions are off                        //*********************************
@@ -69,14 +69,7 @@ int main()
 
             field_end(); //is robot at field end? if yes then turn around
             //update field end coordinates here
-            delay (10); //time to move before turning again
-            
-//            temp = U2RXREG; //read BT module
-//            if (temp == ' ') //check if any input from BT module
-//            {
-//                shut_down(); //stop robot
-//                sleep(); //wait until button pressed
-//            }
+            delay (5); //time to move before turning again
         }
     }
 
