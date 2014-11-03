@@ -1,16 +1,16 @@
 /*
  # //***************************************************************************************************************************
-# //* Author:   Warren Seely //Matthew Ferran                                                                                                 *
+# //* Author:   Warren Seely // Matthew Ferran                                                                                                 *
 # //* Course: NA                                                                                                             *
 # //* Project:    Autonomous robotic weeder in C                                                                                     *
-# //* File: Robot_2C                                                                                                   *
-# //* Description: Robot control. GPS positioning and path accuracy                                                  *
-# //*                   NOTE: field_end IS ONLY WORKABLE FOR 4 CORNER SQUARE IN THIS VERSION                                                                                                      *
-# //* Inputs:       Buttons, GPS,                                                                                                          *
-# //* Outputs:    UART (JE 0:4), motors (JD 0:15)                                                                                                            *
-# //* Computations:     BAUD Rate, heading angle                                                                                                      *
-# //*      REFER TO Robot_1 main.s for further programming info                                                                                                                   *
-# //* Revision History:    3                                                                                                   *
+# //* File: robot                                                                                                   *
+# //* Description: Robot control. GPS positioning and path accuracy. Manual and Automatic guidance.                                                   *
+# //*                   NOTE: field_end() IS ONLY WORKABLE FOR 4 CORNER SQUARE IN THIS VERSION                                                                                                      *
+# //* Inputs:       Buttons, GPS, BT module                                                                                                          *
+# //* Outputs:    UART (JE 0:4), Display screen, robot motors                                                                                                            *
+# //* Computations:     BAUD Rate, heading angle, distance traveled                                                                                                      *
+# //*      REFER TO Robot_1 main.s for original programming info                                                                                                                   *
+# //* Revision History:    4                                                                                                   *
 # //***************************************************************************************************************************
 */
 
