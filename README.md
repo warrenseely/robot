@@ -24,3 +24,4 @@ General coding practices:
     if (ans == (1 * *num))
     vs
     if(ans == (1**num))
+

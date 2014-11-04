@@ -240,34 +240,35 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
         }
         delay(3); //short delay to give time to press both buttons
         state =PORTRead (IOPORT_A) & 0xC0; //read the buttons
-
-        if (state == 0x40)  //button 1 pressed(auto mode)
+        switch (state)
         {
-            LCD_rst (); //reset screen
-            SpiChnPutS (1,(unsigned int*)"Auto mode chosen",17);
-            delay (2);   //wait for a bit
-            LCD_rst ();  //reset screen
-            SpiChnPutS (1,(unsigned int*)"Please stand back",18);
-            delay (2);  //wait for a bit
-            return; //auto mode chosen; continue program
-        }
-        else if (state == 0x80) //button 2 pressed(manual mode)
-        {
-            LCD_rst (); //rest screen
-            SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
-            delay (2);   //wait for a bit
-            manual ();   //maual mode function
-            LCD_rst ();  //reset screen
-            SpiChnPutS (1,(unsigned int*)"Select mode",12);
-        }
-        else if(state == 0xC0)  //both buttons pressed(info mode)
-        {
-            LCD_rst();  //reset screen
-            SpiChnPutS (1,(unsigned int*)"Info mode chosen",17);
-            delay (2);   //wait for a bit
-            load_info ();   //load GPS boundary information into memory remotely with bluetooth
-            LCD_rst (); //reset screen
-            SpiChnPutS (1,(unsigned int*)"Select mode",12);
+            case 0x40: // Button 1 pressed(auto mode)
+                LCD_rst (); //reset screen
+                SpiChnPutS (1,(unsigned int*)"Auto mode chosen",17);
+                delay (2);   //wait for a bit
+                LCD_rst ();  //reset screen
+                SpiChnPutS (1,(unsigned int*)"Please stand back",18);
+                delay (2);  //wait for a bit
+                return; //auto mode chosen; continue program
+            break;
+            
+            case 0x80: // Button 2 pressed(manual mode)
+                LCD_rst (); //rest screen
+                SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
+                delay (2);   //wait for a bit
+                manual ();   //maual mode function
+                LCD_rst ();  //reset screen
+                SpiChnPutS (1,(unsigned int*)"Select mode",12);
+            break;
+            
+            case 0xC0: //Both buttons pressed(info mode)
+                LCD_rst();  //reset screen
+                SpiChnPutS (1,(unsigned int*)"Info mode chosen",17);
+                delay (2);   //wait for a bit
+                load_info ();   //load GPS boundary information into memory remotely with bluetooth
+                LCD_rst (); //reset screen
+                SpiChnPutS (1,(unsigned int*)"Select mode",12);
+            break;
         }
     }
 }
