@@ -33,6 +33,7 @@
 void correct_path (void)
 {
     double x = 0, y = 0, z = 0;
+    unsigned int motor = 0;
 
 
 //weaties was here bwhahaha
@@ -44,49 +45,53 @@ void correct_path (void)
 
     z = atan (x/y); //get position heading, use this to compare to north and desired heading
     z = ((double)180/3.14159) * z;  //convert to degrees
+    x = pass.D_heading - z;  //subtract heading here to compare
 
     if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
     {
-        x = pass.D_heading - z;  //subtract heading here to compare
-
         if (x > pass.D_heading)  //go right
         {
-            PORTWrite (IOPORT_B, 2<<10);    //right side off, left side on
-            delay (1);  //time to turn
-            PORTWrite (IOPORT_B, 3<<10);    //both back on
+            motor = 2 << 10;
         }
         else if(x < pass.D_heading)  //go left
         {
-            PORTWrite (IOPORT_B, 1<<10);    //left side off, right side on
-            delay (1);  //time to turn
-            PORTWrite (IOPORT_B, 3<<10);    //both back on
+            motor = 1 << 10;
         }
-        else    //x = 0; need to check heading and make sure it is correct(Think position is correct, but robot going 90deg)
+        else //case that robot is on the path, but going 90 deg to it
         {
 
         }
     }
     else    //direction is 0
     {
-        x = pass.D_heading - z;  //subtract heading here to compare
-
         if(x < pass.D_heading)   //go left
         {
-            PORTWrite(IOPORT_B, 1<<10); //left side off, right side on
-            delay(1); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            motor = 1 << 10;
         }
         else if(x > pass.D_heading)  //go right
         {
-            PORTWrite(IOPORT_B, 2<<10); //right side off, left side on
-            delay(1); //time to turn
-            PORTWrite(IOPORT_B, 3<<10); //both back on
+            motor = 2 << 10;
         }
-        else    //x = 0; need to check heading and make sure it is correct(Think position is correct, but robot going 90deg)
+        else //case that robot is on the path, but going 90 deg to it
         {
 
         }
     }
+
+    PORTWrite(IOPORT_B, motor); //turn direction
+    //delay(1); //time to turn; (change to a below amount eventually)
+
+     z = abs(z); //make sure z positive
+     y = 2*(z - 2); //amount to turn to correct
+     z = Position.course; //preserve current heading on GPS
+     do
+     {
+          get_current_data(); //update Position.course
+          x = Position.course - z; //change in course from beginning of loop until current
+          x = abs(x); //make sure positive
+     }while(x <= y); //loop until turned by amount to get back on track
+
+    PORTWrite(IOPORT_B, 3 << 10); //both back on
 }
 
 //****************************************************************************************************************
@@ -235,7 +240,7 @@ void navigate_area_start (void)
          }
          PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
 
-         while(distance(flag) < boundary.width) //wait until traveled width
+         while(distance(&flag) < boundary.width) //wait until traveled width
          {
          }
 
@@ -266,7 +271,7 @@ void navigate_area_start (void)
          }
          PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
          flag = 0; //reset flag
-         while(distance(flag) < boundary.width) //wait until traveled width
+         while(distance(&flag) < boundary.width) //wait until traveled width
          {
          }
 
@@ -329,14 +334,15 @@ void navigate_area_start (void)
  * Postconditions: n/a
  */
 
- double distance(int flag) //computes distance from initial call until current call; set flag = 0 before initial call;
+ double distance(int *flag) //computes distance from initial call until current call; set flag = 0 before initial call;
  {                          //used with loop, returns distance
      double c1, c2 = 0, clat2 = 0, clon2 = 0, d = 0; //temps for latitude, longitude, distance
 
-     if (flag == 0) //first time, copy current(start) location and get start coordinate
+     if (*flag == 0) //first time, copy current(start) location and get start coordinate
      {
         pass.clat1 = Position.lat; //copy Position.lat, Position.lon; preserve
         pass.clon1 = Position.lon;
+        return;
      }
 
      get_current_data(); //get current position
@@ -347,7 +353,7 @@ void navigate_area_start (void)
      c2 = pow((pass.clon1 - clon2), 2); //get "y" coordinates
 
      d = sqrt(c1 + c2); //current distance
-     flag = 1; //set flag
+     *flag = 1; //set flag
 
      return d; //current distance
  }

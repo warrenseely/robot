@@ -22,7 +22,7 @@
 int main()
 {
     //local variables
-    int i = 0;
+    int i = 0, flag;
 
     //Note: LCD commands are in print()
     boundary.lat1 = 46.435394;
@@ -68,7 +68,9 @@ int main()
 
             field_end(); //is robot at field end? if yes then turn around
             //update field end coordinates here
-            delay (5); //time to move before turning again
+            //delay (5); //time to move before turning again
+            flag = 0; //reset flag each time
+            while(distance(&flag) < 5); //loop until traveled 5 distance
         }
     }
 

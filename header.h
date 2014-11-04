@@ -124,7 +124,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void load_info_get_modify(int *pair, char type[], char *flag);
     void load_coordinate(int pairnum, int type, char *flag);
     void LCD_rst(void);//clear and reset display screen
-    double distance(int flag);//computes distance from initial call until current call;
+    double distance(int *flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
     void setup_SPI1 (void);
     void compute_pass_point(void); //Compute the point to navigate to on current pass

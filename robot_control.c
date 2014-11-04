@@ -76,7 +76,7 @@ char get_current_data (void) //gets current lat/lon/speed and heading
    Position.time = strtod(GPSdata.UTC_time,NULL);
    Position.date = strtod(GPSdata.Date,NULL);
    Position.course = strtod(GPSdata.Course_over_ground,NULL);
-   temp = *GPSdata.STATUS; //copy status to temp
+   temp = GPSdata.STATUS[0]; //copy status to temp
    return temp; //used during startup to determine if connected
 }
 
