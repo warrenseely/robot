@@ -421,30 +421,28 @@ void get_GPS_started (void)
      double c1 = 0, c2 = 0, temp1 = 0;
 
      //get the stored current latitude and longitude
-     c1 = pass.clat1 * 100;             //***********************************************************
-     c2 = pass.clon1 * 100;             //* Need to multiply each one by 100 here, not sure why but *
-     clat2 *= 100;                      //* calculation DOES NOT work without this.                 *
-     clon2 *= 100;                      //***********************************************************
-
+     c1 = pass.clat1;             
+     c2 = pass.clon1;             
+                           
      //first latitude conversion
-     temp1 = (clat2 - (int)clat2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     temp1 = ((clat2 - (int)clat2) * 100) / 60; //get the minutes(decimal part) and divide by 60 to convert to degrees
      clat2 = (int)clat2 + temp1; //put the number back together; In degrees now
-     clat2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+     clat2 *= ((1000 * 3280.4) / 9); //convert to kilometers(10000/90) then feet(*3280.4)
 
      //first longitude conversion
-     temp1 = (clon2 - (int)clon2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     temp1 = ((clon2 - (int)clon2) * 100) / 60; //get the minutes(decimal part) and divide by 60 to convert to degrees
      clon2 = (int)clon2 + temp1; //put the number back together; In degrees now
-     clon2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+     clon2 *= ((1000 * 3280.4) / 9); //convert to kilometers(10000/90) then feet(*3280.4)
 
      //second latitude conversion
-     temp1 = (c1 - (int)c1)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     temp1 = ((c1 - (int)c1) * 100) / 60; //get the minutes(decimal part) and divide by 60 to convert to degrees
      c1 = (int)c1 + temp1; //put the number back together; In degrees now
-     c1 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+     c1 *= ((1000 * 3280.4) / 9); //convert to kilometers(10000/90) then feet(*3280.4)
 
      //second longitude conversion
-     temp1 = (c2 - (int)c2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     temp1 = ((c2 - (int)c2) * 100) / 60; //get the minutes(decimal part) and divide by 60 to convert to degrees
      c2 = (int)c2 + temp1; //put the number back together; In degrees now
-     c2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+     c2 *= ((1000 * 3280.4) / 9); //convert to kilometers(10000/90) then feet(*3280.4)
 
      c1 = pow((c1 - clat2), 2); //get "x" coordinates
      c2 = pow((c2 - clon2), 2); //get "y" coordinates
