@@ -230,7 +230,7 @@ void startup (void)
  */
 void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
 {
-    int state;  //declare
+    int state = 0;  //declare
     while (1)
     {
         state = 0;  //initialize to 0

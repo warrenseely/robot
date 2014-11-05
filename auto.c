@@ -385,8 +385,8 @@ void get_GPS_started (void)
  * Author: Warren Seely
  * Date Created: 10/30/14
  * Date Last Modified: 10/30/14
- * Discription: //start the robot moving forward; Eventually check to make sure all external sensors
-                //working before continuing
+ * Discription: Start the robot moving forward; Eventually check to make sure all external sensors
+ *              working before continuing
  * Input: n/a
  * Returns: n/a
  * Preconditions: n/a
@@ -452,4 +452,33 @@ void get_GPS_started (void)
      temp1 = sqrt(c1 + c2); //current distance in feet
 
      return temp1; //return the distance in feet
+ }
+
+ //****************************************************************************************************************
+
+ /*
+ * Function: killswitch ()
+ * Author: Matthew Ferran
+ * Date Created: 11/5/14
+ * Date Last Modified: 11/5/14
+ * Discription: Allows the user to stop the robot while it's in auto mode
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions: robot is in auto mode
+ * Postconditions: robot has stopped moving
+ */
+ void killswitch (void)
+ {
+     int state = 0;
+
+
+     state = PORTRead (IOPORT_A) & 0xC0; //set state
+     if (state == 0) //was a button pressed?
+     {
+         return; //no, keep going
+     }
+     if (state == 0x40) //button one
+     {
+         PORTWrite (IOPORT_B, 0); //stop moving
+     }
  }
