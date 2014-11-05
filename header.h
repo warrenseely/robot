@@ -7,6 +7,7 @@
 
 #ifndef HEADER_H
 #define	HEADER_H
+#define _SUPPRESS_PLIB_WARNING
 
 #ifdef	__cplusplus
 extern "C" {
