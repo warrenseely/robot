@@ -331,16 +331,17 @@ void shut_down (void)    //stop robot, shut down booms
  */
  void manual (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
-    char choice = '\0';
+    char choice = '\0', temp = '\0';
     int flag = 0;
     unsigned int motors = 0;
 
     while (choice != 'x') //while choice is not to exit
     {
+        UART2ClearAllErrors();
         if (DataRdyUART2()) //new data ready?
         {
             choice = U2RXREG; //copy to variable
-
+            temp = choice;
             switch (choice)
             {
 
@@ -371,41 +372,9 @@ void shut_down (void)    //stop robot, shut down booms
                     break;
 
             }
-            PORTWrite (IOPORT_B, motors); //issue command to board
 
-//            if (choice == 'd') //right key
-//            {
-//                PORTWrite (IOPORT_B, 1<<10); //right
-//            }
-//            else if (choice == 'a') //left key
-//            {
-//                PORTWrite (IOPORT_B, 2<<10); //left
-//            }
-//            else if (choice == 'w') //forward key
-//            {
-//                PORTWrite (IOPORT_B, 3<<10); //forward
-//            }
-//            else if (choice == 's') //backward key
-//            {
-//                PORTWrite (IOPORT_B, 7<<10); //backward
-//            }
-//            else if (choice == 'x') //exit key
-//            {
-//                PORTWrite (IOPORT_B, 0); //stop
-//                //putsUART1 ("exit");
-//                SpiChnPutS (1, (unsigned int*)"exit", 5);
-//            }
-//            else if (choice == 'r') //read data from GPS
-//            {
-//                traverse_boundary(flag); //record current position in boundary struct
-//                flag++;
-//            }
-//            else if (choice == ' ') //stop key
-//            {
-//                PORTWrite (IOPORT_B, 0); //stop
-//            }
+            PORTWrite (IOPORT_B, motors); //issue command to board
         }
-        PORTWrite(IOPORT_B, 0); //turn motors off
     }
  }
 
