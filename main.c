@@ -61,28 +61,14 @@ int main()
             get_current_data(); //current lat/lon/heading
             correct_path(); //keeps robot on line
 
-            if (job_done()) //is robot finished?
-            {
-                sleep(); //wait until button pressed
-                break; //break out of the current while loop
-            }
-
             field_end(); //is robot at field end? if yes then turn around
-            //update field end coordinates here
+           
             //delay (5); //time to move before turning again
-
-            /****EMERGENCY STOP CODE****/
-            if(DataRdyUART2()) //check if new data ready
+            if (killswitch() || job_done()) //emergency stop or robot finished
             {
-                temp = U2RXREG; //get the character
-                if(temp == ' ') //if character is a "space"(halt command)
-                {
-                    shut_down(); //stop robot and shut booms off
-                }
-                else if(temp == 'w')//restart robot with same settings
-                {
-                    start_guidance(); //restart robot and booms
-                }
+                shut_down(); //stop robot and shut booms off
+                sleep(); //wait until a button is pressed
+                break; //break out of current while loop
             }
 
             flag = 0; //reset flag each time

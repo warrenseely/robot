@@ -459,24 +459,34 @@ void get_GPS_started (void)
  * Author: Matthew Ferran
  * Date Created: 11/5/14
  * Date Last Modified: 11/5/14
- * Discription: Allows the user to stop the robot while it's in auto mode
+ * Discription: Allows the user to stop the robot while its in auto mode through bluetooth or by hitting button 1
  * Input: n/a
  * Returns: n/a
  * Preconditions: robot is in auto mode
  * Postconditions: robot has stopped moving
  */
- void killswitch (void)
+ int killswitch (void)
  {
      int state = 0;
+     char temp = '\0';
 
+    if(DataRdyUART2()) //check if new data ready
+    {
+        temp = U2RXREG; //get the character
+        if(temp == ' ') //if character is a "space"(halt command)
+        {
+            return 1;
+        }
+    }
 
-     state = PORTRead (IOPORT_A) & 0xC0; //set state
+     state = PORTRead (IOPORT_A) & 0xC0; //get button status
+     
      if (state == 0) //was a button pressed?
      {
-         return; //no, keep going
+         return 0; //no, keep going
      }
      if (state == 0x40) //button one
      {
-         PORTWrite (IOPORT_B, 0); //stop moving
+         return 1;
      }
  }

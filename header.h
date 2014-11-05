@@ -136,7 +136,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void sleep(void); //wait in here until a button pressed. "Sleeping".
     double convert_feet(double clat2, double clon2); //convert the latitude/longitude coordinates to feet for distance calculation
 
-    void killswitch(void); //prototype emergency shutoff function
+    int killswitch(void); //prototype emergency shutoff function
 
 #ifdef	__cplusplus
 }
