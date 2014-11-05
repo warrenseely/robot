@@ -70,7 +70,7 @@ int main()
             //update field end coordinates here
             //delay (5); //time to move before turning again
             flag = 0; //reset flag each time
-            while(distance(&flag) < 5); //loop until traveled 5 distance
+            while(distance(&flag) < 5); //loop until traveled 5 feet
         }
     }
 

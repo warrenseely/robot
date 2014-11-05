@@ -336,24 +336,22 @@ void navigate_area_start (void)
 
  double distance(int *flag) //computes distance from initial call until current call; set flag = 0 before initial call;
  {                          //used with loop, returns distance
-     double c1, c2 = 0, clat2 = 0, clon2 = 0, d = 0; //temps for latitude, longitude, distance
+     double clat2 = 0, clon2 = 0, d = 0; //temps for latitude, longitude, distance
 
      if (*flag == 0) //first time, copy current(start) location and get start coordinate
      {
         pass.clat1 = Position.lat; //copy Position.lat, Position.lon; preserve
         pass.clon1 = Position.lon;
-        return;
+        *flag = 1; //set flag
+        return -1;
      }
 
      get_current_data(); //get current position
      clat2 = Position.lat; //copy Position.lat, Position.lon
      clon2 = Position.lon;
 
-     c1 = pow((pass.clat1 - clat2), 2); //get "x" coordinates
-     c2 = pow((pass.clon1 - clon2), 2); //get "y" coordinates
-
-     d = sqrt(c1 + c2); //current distance
-     *flag = 1; //set flag
+     //ocnvert the coordinates to feet
+     d = convert_feet(clat2, clon2); //pass in clat2, clon2; can get clat1 and clon1 from pass struct
 
      return d; //current distance
  }
@@ -405,3 +403,53 @@ void get_GPS_started (void)
  }
 
  //****************************************************************************************************************
+
+ /*
+ * Function: convert_feet ()
+ * Author: Warren Seely
+ * Date Created: 11/4/14
+ * Date Last Modified: 11/4/14
+ * Discription: convert latitude/longitude coordinates to feet
+ * Input: n/a
+ * Returns: distance in feet
+ * Preconditions: n/a
+ * Postconditions: n/a
+ */
+
+ double convert_feet(double clat2, double clon2)
+ {
+     double c1 = 0, c2 = 0, temp1 = 0;
+
+     //get the stored current latitude and longitude
+     c1 = pass.clat1 * 100;             //***********************************************************
+     c2 = pass.clon1 * 100;             //* Need to multiply each one by 100 here, not sure why but *
+     clat2 *= 100;                      //* calculation DOES NOT work without this.                 *
+     clon2 *= 100;                      //***********************************************************
+
+     //first latitude conversion
+     temp1 = (clat2 - (int)clat2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     clat2 = (int)clat2 + temp1; //put the number back together; In degrees now
+     clat2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+
+     //first longitude conversion
+     temp1 = (clon2 - (int)clon2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     clon2 = (int)clon2 + temp1; //put the number back together; In degrees now
+     clon2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+
+     //second latitude conversion
+     temp1 = (c1 - (int)c1)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     c1 = (int)c1 + temp1; //put the number back together; In degrees now
+     c1 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+
+     //second longitude conversion
+     temp1 = (c2 - (int)c2)/60; //get the minutes(decimal part) and divide by 60 to convert to degrees
+     c2 = (int)c2 + temp1; //put the number back together; In degrees now
+     c2 *= ((10000 * 3280.4)/90); //convert to kilometers(10000/90) then feet(*3280.4)
+
+     c1 = pow((c1 - clat2), 2); //get "x" coordinates
+     c2 = pow((c2 - clon2), 2); //get "y" coordinates
+
+     temp1 = sqrt(c1 + c2); //current distance in feet
+
+     return temp1; //return the distance in feet
+ }
