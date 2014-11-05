@@ -25,3 +25,12 @@ General coding practices:
     vs
     if(ans == (1**num))
 
+{Braces open on the line beneath a switch/if/for/ect statement}
+
+    switch (something)
+    {
+    }
+    vs
+    switch (something) {
+    }
+

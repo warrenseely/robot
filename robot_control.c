@@ -256,7 +256,7 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
                 LCD_rst (); //rest screen
                 SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
                 delay (2);   //wait for a bit
-                manual ();   //maual mode function
+                manual ();   //manual mode function
                 LCD_rst ();  //reset screen
                 SpiChnPutS (1,(unsigned int*)"Select mode",12);
             break;
@@ -319,65 +319,95 @@ void shut_down (void)    //stop robot, shut down booms
 
 /*
  * Function: manual ()
- * Author: Warren Seely
+ * Author: Warren Seely // Matthew Ferran
  * Date Created: ???
- * Date Last Modified: 10/26/14
+ * Date Last Modified: 11/4/14
  * Discription: Remote control mode (x: exit, w: forward, a: turn left, d: turn right,
- *                                   s: reverse, spacebar: stop)
+ *                                   s: reverse, spacebar: stop, r: record gps data)
  * Input: n/a
  * Returns: n/a
  * Preconditions: Manual mode is selected by the user
- * Postconditions: The robot can be controled by WASDX and SPACE
+ * Postconditions: The robot can be controled by WASDXR and SPACE
  */
  void manual (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
     char choice = '\0';
     int flag = 0;
+    unsigned int motors = 0;
 
     while (choice != 'x') //while choice is not to exit
     {
         if (DataRdyUART2()) //new data ready?
         {
             choice = U2RXREG; //copy to variable
-           // U1TXREG = choice; //write to screen(optional)
-        //}
 
-        if (choice == 'd') //right key
-        {
-            PORTWrite (IOPORT_B, 1<<10); //right
-        }
-        else if (choice == 'a') //left key
-        {
-            PORTWrite (IOPORT_B, 2<<10); //left
-        }
-        else if (choice == 'w') //forward key
-        {
-            PORTWrite (IOPORT_B, 3<<10); //forward
-        }
-        else if (choice == 's') //backward key
-        {
-            PORTWrite (IOPORT_B, 7<<10); //backward
-        }
-        else if (choice == 'x') //exit key
-        {
-            PORTWrite (IOPORT_B, 0); //stop
-            //putsUART1 ("exit");
-            SpiChnPutS (1, (unsigned int*)"exit", 5);
-        }
-        else if (choice == 'r') //read data from GPS
-        {
-            traverse_boundary(flag); //record current position in boundary struct
-            flag++;
-        }
-        else if (choice == ' ') //stop key
-        {
-            PORTWrite (IOPORT_B, 0); //stop
-        }
+            switch (choice)
+            {
+
+                case 'd': //right key
+                    motors = 1 << 10; //right
+                    break;
+
+                case 'a': //left key
+                    motors = 2 << 10; //left
+                    break;
+
+                case 'w': //forward key
+                    motors = 3 << 10; //forward
+                    break;
+
+                case 's': //backward key
+                    motors = 7 << 10; //backward
+                    break;
+
+                case 'x': //exit key
+                case ' ': //stop key
+                    motors = 0; //stop
+                    break;
+
+                case 'r': //record current data key
+                    traverse_boundary (flag); //get data
+                    flag++;
+                    break;
+
+            }
+            PORTWrite (IOPORT_B, motors); //issue command to board
+//            if (choice == 'd') //right key
+//            {
+//                PORTWrite (IOPORT_B, 1<<10); //right
+//            }
+//            else if (choice == 'a') //left key
+//            {
+//                PORTWrite (IOPORT_B, 2<<10); //left
+//            }
+//            else if (choice == 'w') //forward key
+//            {
+//                PORTWrite (IOPORT_B, 3<<10); //forward
+//            }
+//            else if (choice == 's') //backward key
+//            {
+//                PORTWrite (IOPORT_B, 7<<10); //backward
+//            }
+//            else if (choice == 'x') //exit key
+//            {
+//                PORTWrite (IOPORT_B, 0); //stop
+//                //putsUART1 ("exit");
+//                SpiChnPutS (1, (unsigned int*)"exit", 5);
+//            }
+//            else if (choice == 'r') //read data from GPS
+//            {
+//                traverse_boundary(flag); //record current position in boundary struct
+//                flag++;
+//            }
+//            else if (choice == ' ') //stop key
+//            {
+//                PORTWrite (IOPORT_B, 0); //stop
+//            }
         }
     }
  }
 
- //****************************************************************************************************************
+//****************************************************************************************************************
 
  /*
  * Function: load_info ()
@@ -390,7 +420,7 @@ void shut_down (void)    //stop robot, shut down booms
  * Preconditions: n/a
  * Postconditions: n/a
  */
- void load_info(void) //get coordinates from BT2 module; x is exit info mode
+ void load_info (void) //get coordinates from BT2 module; x is exit info mode
  {                   
     char type[3] = {'\0'}, flag = '\0'; //temps to hold selection number
     int i = 0, pairnum = 0; //i set to 1 as default(latitude)
@@ -434,7 +464,7 @@ void shut_down (void)    //stop robot, shut down booms
  * Preconditions: n/a
  * Postconditions: n/a
  */
- void load_info_get_modify(int *pairnum, char type[], char *flag) //gets the coordinate pair, and if it is latitude or longitude
+ void load_info_get_modify (int *pairnum, char type[], char *flag) //gets the coordinate pair, and if it is latitude or longitude
  {
      char pair = '\0';
      int i = 0;
@@ -485,7 +515,7 @@ void shut_down (void)    //stop robot, shut down booms
      }while (type[2] == '\0'); // loop until have something
  }
 
- //****************************************************************************************************************
+//****************************************************************************************************************
 
  /*
  * Function: load_coordinate ()
@@ -499,7 +529,7 @@ void shut_down (void)    //stop robot, shut down booms
  * Postconditions: n/a
  */
 
-void load_coordinate(int pairnum, int i, char *flag) //actually load the coordinate information
+void load_coordinate (int pairnum, int i, char *flag) //actually load the coordinate information
 {
     int counter = 0;
     char temp[20] = {'\0'}, temp1 = '\0';
@@ -549,7 +579,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
     }
 }
 
- //****************************************************************************************************************
+//****************************************************************************************************************
 
 /*
  * Function: traverse_boundary ()
@@ -564,7 +594,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
  * Postconditions: n/a
  */
 
- void traverse_boundary(int flag)
+ void traverse_boundary (int flag)
  {
      if (flag == 9) //check to see if 9 pairs read in already
      {
@@ -577,7 +607,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
      *(&boundary.lon1 + flag) = Position.lon; //update the current longitude and load into boundary
  }
 
- //****************************************************************************************************************
+//****************************************************************************************************************
 
 /*
  * Function: sleep ()
@@ -591,7 +621,7 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
  * Postconditions: n/a
  */
 
- void sleep(void)
+ void sleep (void)
  {
      do
     {
@@ -599,3 +629,5 @@ void load_coordinate(int pairnum, int i, char *flag) //actually load the coordin
     } while((PORTRead(IOPORT_A) & 0xC0) == 0); //loop until someone wakes robot again by pressing a button
 
  }
+
+//****************************************************************************************************************
