@@ -134,7 +134,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void traverse_boundary(int flag); //for gathering the boundary coordinates by driving around the boundary.
                                   //current position stored in boundary every time 'r' is hit
     void sleep(void); //wait in here until a button pressed. "Sleeping".
-    double convert_feet(double, double); //convert the latitude/longitude coordinates to feet for distance calculation
+    double convert_feet(double clat2, double clon2); //convert the latitude/longitude coordinates to feet for distance calculation
 
     void killswitch(void); //prototype emergency shutoff function
 
