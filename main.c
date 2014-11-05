@@ -23,6 +23,7 @@ int main()
 {
     //local variables
     int i = 0, flag;
+    char temp = '\0';
 
     //Note: LCD commands are in print()
     boundary.lat1 = 46.435394;
@@ -69,6 +70,21 @@ int main()
             field_end(); //is robot at field end? if yes then turn around
             //update field end coordinates here
             //delay (5); //time to move before turning again
+
+            /****EMERGENCY STOP CODE****/
+            if(DataRdyUART2()) //check if new data ready
+            {
+                temp = U2RXREG; //get the character
+                if(temp == ' ') //if character is a "space"(halt command)
+                {
+                    shut_down(); //stop robot and shut booms off
+                }
+                else if(temp == 'w')//restart robot with same settings
+                {
+                    start_guidance(); //restart robot and booms
+                }
+            }
+
             flag = 0; //reset flag each time
             while(distance(&flag) < 5); //loop until traveled 5 feet
         }

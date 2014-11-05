@@ -372,6 +372,7 @@ void shut_down (void)    //stop robot, shut down booms
 
             }
             PORTWrite (IOPORT_B, motors); //issue command to board
+
 //            if (choice == 'd') //right key
 //            {
 //                PORTWrite (IOPORT_B, 1<<10); //right
@@ -404,6 +405,7 @@ void shut_down (void)    //stop robot, shut down booms
 //                PORTWrite (IOPORT_B, 0); //stop
 //            }
         }
+        PORTWrite(IOPORT_B, 0); //turn motors off
     }
  }
 
