@@ -22,7 +22,8 @@
 int main()
 {
     //local variables
-    int i = 0, choice;
+    int choice, status;
+    char error_code[3] = {'\0'}; //temporary storage for the upcoming interrupt error code
 
     //Note: LCD commands are in print()
     boundary.lat1 = 46.435394;
@@ -37,7 +38,7 @@ int main()
     setup_UART1();  //Initialize the UART1 module                       //*                                *
     setup_UART2(); //Initialize the UART2 module                        //* These are the setup functions  *
     setupPORTs(); //Initialize pin RF8 as digital output                //*                                *
-    setup_SPI1(); //Initialize the SPI1 module for screen communication //**********************************
+    setup_SPIs(); //Initialize the SPI modules for screen communication //**********************************
 
     while(1) //embeded systems run forever
     {
@@ -47,7 +48,7 @@ int main()
         switch (choice)
         {
             case 0:
-                auto_mode(); //Automatice guidance mode
+                status = auto_mode(); //Automatic guidance mode
                 break;
 
             case 1:

@@ -189,19 +189,25 @@ int job_done (void)
  */
 void navigate_area_start (void)
 {
+    double clat2, clon2, temp;
+
+    clat2 = boundary.lat1;
+    clon2 = boundary.lon1;
+
     get_current_data (); //current lat/lon/heading
-//    if ( (Position.lat == boundary.lat1) &&
-//         (Position.lon == boundary.lon1) ) //if current position is correct, skip function
-//    {
-//        return; //exit function
-//    }
-//    set_path (1); //need to compute path from current to var1 coordinates
-//    while ( (Position.lat != boundary.lat1) &&
-//            (Position.lon != boundary.lon1) ) //while not at start destination
-//    {
-//        correct_path (); //guide robot
-//        get_current_data (); //current lat/lon/heading
-//    }
+    
+    if (convert_feet(clat2, clon2) <= 5) //if within 5 feet of start coordinates
+    {
+        return;
+    }
+    
+    set_path(1); //path to follow to start point
+
+    while(convert_feet(clat2, clon2) >= 5) //get distance to start point in feet
+    {
+        get_current_data(); //get the current latitude/longitude
+        correct_path(); //guide the robot
+    }
 }
 
 //****************************************************************************************************************
@@ -221,10 +227,16 @@ void navigate_area_start (void)
  double field_end(void)
  {
      int flag = 0, x = 1;
+     double clat2, clon2;
+
+     pass.clat1 = Position.lat; //copy current position coordinates
+     pass.clon1 = Position.lon;
+     clat2 = pass.nav_to_lat; //get the field end coordinates
+     clon2 = pass.nav_to_lon;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
-     if ((Position.lat != pass.nav_to_lat) || (Position.lon != pass.nav_to_lon))
+     if (convert_feet(clat2, clon2) > 5) //if farther than 5 feet away from end
      {
          return;
      }

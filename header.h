@@ -127,7 +127,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     void LCD_rst(void);//clear and reset display screen
     double distance(int *flag);//computes distance from initial call until current call;
                               //set flag = 0 before initial call;used with loop, returns distance
-    void setup_SPI1 (void);
+    void setup_SPIs (void);
     void compute_pass_point(void); //Compute the point to navigate to on current pass
     void start_guidance(void); //start the robot moving forward; Eventually check to make sure all external sensors
                                //working before continuing
