@@ -112,14 +112,14 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     char get_current_data(void);//get current lat/lon/heading from GPS
     void read_GPS_fields(char * address); //Reads gps string to a comma, stores in struct pointed to by *address
     void print(int choice);//print desired string
-    void startup(void);//beginning program function; use to select mode, and maybe other?
-    void mode(void);//choose auto/manual/info modes
+    int startup(void);//beginning program function; use to select mode, and maybe other?
+    int mode(void);//choose auto/manual/info modes
     void delay(int i);//a delay function for screen display
     int job_done(void);//checks to see if robot has finished job coverage area
     void shut_down(void);//shuts robot down
     void get_GPS_started(void);//coming up. autonomous arrival of robot from drop site to job area
     void navigate_area_start(void);//navigate from current position to start of area to cover
-    void manual(void);//manual mode
+    void manual_mode(void);//manual mode
     double field_end(void);//for turning at field ends
     void load_info(void);//coming up. load GPS coordinates into memory through interface
     void load_info_get_modify(int *pair, char type[], char *flag);
@@ -137,7 +137,7 @@ struct PASS_INFO pass;//define struct to contain information for each pass
     double convert_feet(double clat2, double clon2); //convert the latitude/longitude coordinates to feet for distance calculation
 
     int killswitch(void); //prototype emergency shutoff function
-
+    int auto_mode(void); //the main auto mode runner
 #ifdef	__cplusplus
 }
 #endif
