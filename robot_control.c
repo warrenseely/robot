@@ -371,6 +371,9 @@ void shut_down (void)    //stop robot, shut down booms
                     flag++;
                     break;
 
+                /*case 'j': //jump key
+                    implement a jump feature.
+                    break;*/
             }
 
             PORTWrite (IOPORT_B, motors); //issue command to board
