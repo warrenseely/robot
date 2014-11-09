@@ -72,7 +72,7 @@ void setup_UART2()
 
 //****************************************************************************************************************
 
-void setup_SPI1 (void)
+void setup_SPIs (void)
 {
 	SpiChnOpen (1, SPI_CON_MSTEN  | SPI_CON_MODE8 | SPI_CON_ON | CLK_POL_ACTIVE_LOW, 256);
 
@@ -80,6 +80,13 @@ void setup_SPI1 (void)
 	PORTSetBits (IOPORT_D, BIT_9);
 	delay (1);
 	PORTClearBits (IOPORT_D, BIT_9);
+
+        SpiChnOpen (2, SPI_CON_MSTEN  | SPI_CON_MODE8 | SPI_CON_ON | CLK_POL_ACTIVE_LOW, 256);
+
+	// Create a falling edge pin SS to start communication
+	PORTSetBits (IOPORT_G, BIT_9);
+	delay (1);
+	PORTClearBits (IOPORT_G, BIT_9);
 }
 
 //****************************************************************************************************************

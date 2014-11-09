@@ -140,9 +140,6 @@ void print (int choice)
     if (choice == 0)
     {
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"Begin Program",14);
-        delay (5);
-        LCD_rst ();
         SpiChnPutS (1,(unsigned int*)"Awaiting input for mode",23);
         delay (5);
         LCD_rst ();
@@ -207,12 +204,14 @@ void LCD_rst (void)  //set and home display cursor
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void startup (void)
+int startup (void)
 {
-    mode (); //choose auto/manual/info-loading mode
+    int choice;
+    choice = mode (); //choose auto/manual/info-loading mode
              //loop and check status of RF12 pin; if cylcing then wait until stays off before proceeding
              //eventually write in a print message for the LCD to let user know whats going on
     delay (5); //short delay to back away from robot
+    return choice;
 }
 
 //****************************************************************************************************************
@@ -228,9 +227,10 @@ void startup (void)
  * Preconditions: n/a
  * Postconditions: n/a
  */
-void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
+int mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*****
 {
     int state = 0;  //declare
+
     while (1)
     {
         state = 0;  //initialize to 0
@@ -238,8 +238,10 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
         {
             state = PORTRead (IOPORT_A) & 0xC0;  //current state of port A
         }
+
         delay(3); //short delay to give time to press both buttons
         state =PORTRead (IOPORT_A) & 0xC0; //read the buttons
+
         switch (state)
         {
             case 0x40: // Button 1 pressed(auto mode)
@@ -249,25 +251,21 @@ void mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN
                 LCD_rst ();  //reset screen
                 SpiChnPutS (1,(unsigned int*)"Please stand back",18);
                 delay (2);  //wait for a bit
-                return; //auto mode chosen; continue program
+                return 0; //auto mode chosen; continue program
             break;
             
             case 0x80: // Button 2 pressed(manual mode)
                 LCD_rst (); //rest screen
                 SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
                 delay (2);   //wait for a bit
-                manual ();   //manual mode function
-                LCD_rst ();  //reset screen
-                SpiChnPutS (1,(unsigned int*)"Select mode",12);
+                return 1; //manual ();   //manual mode function
             break;
             
             case 0xC0: //Both buttons pressed(info mode)
                 LCD_rst();  //reset screen
                 SpiChnPutS (1,(unsigned int*)"Info mode chosen",17);
                 delay (2);   //wait for a bit
-                load_info ();   //load GPS boundary information into memory remotely with bluetooth
-                LCD_rst (); //reset screen
-                SpiChnPutS (1,(unsigned int*)"Select mode",12);
+                return 2; //load_info ();   //load GPS boundary information into memory remotely with bluetooth
             break;
         }
     }
@@ -318,7 +316,7 @@ void shut_down (void)    //stop robot, shut down booms
 //****************************************************************************************************************
 
 /*
- * Function: manual ()
+ * Function: manual_mode ()
  * Author: Warren Seely // Matthew Ferran
  * Date Created: ???
  * Date Last Modified: 11/4/14
@@ -329,7 +327,7 @@ void shut_down (void)    //stop robot, shut down booms
  * Preconditions: Manual mode is selected by the user
  * Postconditions: The robot can be controled by WASDXR and SPACE
  */
- void manual (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
+ void manual_mode (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
     char choice = '\0', temp = '\0';
     int flag = 0;

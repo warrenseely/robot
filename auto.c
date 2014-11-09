@@ -189,19 +189,25 @@ int job_done (void)
  */
 void navigate_area_start (void)
 {
+    double clat2, clon2, temp;
+
+    clat2 = boundary.lat1;
+    clon2 = boundary.lon1;
+
     get_current_data (); //current lat/lon/heading
-//    if ( (Position.lat == boundary.lat1) &&
-//         (Position.lon == boundary.lon1) ) //if current position is correct, skip function
-//    {
-//        return; //exit function
-//    }
-//    set_path (1); //need to compute path from current to var1 coordinates
-//    while ( (Position.lat != boundary.lat1) &&
-//            (Position.lon != boundary.lon1) ) //while not at start destination
-//    {
-//        correct_path (); //guide robot
-//        get_current_data (); //current lat/lon/heading
-//    }
+    
+    if (convert_feet(clat2, clon2) <= 5) //if within 5 feet of start coordinates
+    {
+        return;
+    }
+    
+    set_path(1); //path to follow to start point
+
+    while(convert_feet(clat2, clon2) >= 5) //get distance to start point in feet
+    {
+        get_current_data(); //get the current latitude/longitude
+        correct_path(); //guide the robot
+    }
 }
 
 //****************************************************************************************************************
@@ -221,10 +227,16 @@ void navigate_area_start (void)
  double field_end(void)
  {
      int flag = 0, x = 1;
+     double clat2, clon2;
+
+     pass.clat1 = Position.lat; //copy current position coordinates
+     pass.clon1 = Position.lon;
+     clat2 = pass.nav_to_lat; //get the field end coordinates
+     clon2 = pass.nav_to_lon;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
-     if ((Position.lat != pass.nav_to_lat) || (Position.lon != pass.nav_to_lon))
+     if (convert_feet(clat2, clon2) > 5) //if farther than 5 feet away from end
      {
          return;
      }
@@ -489,4 +501,66 @@ void get_GPS_started (void)
      {
          return 1;
      }
+ }
+
+ //****************************************************************************************************************
+
+ /*
+ * Function: auto_mode ()
+ * Author: Warren Seely
+ * Date Created: 11/5/14
+ * Date Last Modified: 11/5/14
+ * Discription: the main automatic guidance function
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions:
+ * Postconditions:
+ */
+
+ int auto_mode(void)
+ {
+     int flag = 0, i, exit, temp, temp1;
+
+     for(i = 0; i <= 3; i++)
+     {
+         *(&pass.nav_from_lat + i) = *(&boundary.lat1 + i); //copy first 2 coordinate pairs of boundary for first pass coordinates
+     }
+
+     get_GPS_started(); //wait here to make sure GPS has acquired signal; checks the status slot of the GPS data
+     navigate_area_start(); //if robot not at area start coordinates, navigate to them(boundary.lat1 and boundary.lon1)
+     set_path(0); //set headings required for back and forth; 0 indicates area heading, 1 indicates to/from area heading
+     pass.direction = 1; //set initial direction
+     pass.D_heading = pass.Master; //desired initial heading is MAS_head
+     start_guidance(); //start externals and start robot moving forward
+
+     while(1) //main program loop for auto mode
+     {
+         get_current_data(); //current lat/lon/heading
+         correct_path(); //keeps robot on line
+
+         field_end(); //is robot at field end? if yes then turn around
+
+         temp = killswitch();
+         temp1 = job_done();
+         //delay (5); //time to move before turning again
+         if (temp || temp1) //emergency stop or robot finished
+         {
+             if(temp)
+             {
+                 exit = 0; //terminated on user order
+             }
+             else
+             {
+                 exit = 1; //successfully completed field
+             }
+             
+             shut_down(); //stop robot and shut booms off
+             sleep(); //wait until a button is pressed
+             break; //break out of current while loop
+         }
+
+         flag = 0; //reset flag each time
+         while(distance(&flag) < 5); //loop until traveled 5 feet
+     }
+     return exit;
  }
