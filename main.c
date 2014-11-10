@@ -23,13 +23,12 @@ int main()
 {
     //local variables
     int choice, status;
-    char error_code[3] = {'\0'}; //temporary storage for the upcoming interrupt error code
+    //char error_code[3] = {'\0'}; //temporary storage for the upcoming interrupt error code
 
-    //Note: LCD commands are in print()
-    boundary.lat1 = 46.435394;
-    boundary.lon1 = 117.09728;
+    boundary.lat1 = 46.435436;
+    boundary.lon1 = 117.09737;
     boundary.lat2 = 46.435577;
-    boundary.lon2 = 117.09727;
+    boundary.lon2 = 117.09738;
     boundary.lat3 = 46.435566;
     boundary.lon3 = 117.09707;
 

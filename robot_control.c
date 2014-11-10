@@ -319,19 +319,20 @@ void shut_down (void)    //stop robot, shut down booms
  * Function: manual_mode ()
  * Author: Warren Seely // Matthew Ferran
  * Date Created: ???
- * Date Last Modified: 11/4/14
+ * Date Last Modified: 11/9/14
  * Discription: Remote control mode (x: exit, w: forward, a: turn left, d: turn right,
- *                                   s: reverse, spacebar: stop, r: record gps data)
+ *                                   s: reverse, q: spin left, e: spin right, r: record gps data)
  * Input: n/a
  * Returns: n/a
  * Preconditions: Manual mode is selected by the user
- * Postconditions: The robot can be controled by WASDXR and SPACE
+ * Postconditions: The robot can be controled by WASDQE and X
  */
  void manual_mode (void) //remote control; utilizes BT2 to control robot movement keys w,a,d,z and spacebar control movement; x is exit manual mode
  {
-    char choice = '\0', temp = '\0';
+    char choice = '\0';
     int flag = 0;
-    unsigned int motors = 0;
+    unsigned int motors = 0, motors1 = 0;
+    int counter = 0;
 
     while (choice != 'x') //while choice is not to exit
     {
@@ -339,24 +340,38 @@ void shut_down (void)    //stop robot, shut down booms
         if (DataRdyUART2()) //new data ready?
         {
             choice = U2RXREG; //copy to variable
-            temp = choice;
+        
             switch (choice)
             {
 
-                case 'd': //right key
-                    motors = 1 << 10; //right
+                case 'w': //right key
+                    motors = 1 << 10; //direction
+                    motors1 = 11 << 10; //enable
                     break;
 
                 case 'a': //left key
-                    motors = 2 << 10; //left
+                    motors = 1 << 10; //direction
+                    motors1 = 3 << 10; //enable
                     break;
 
-                case 'w': //forward key
-                    motors = 3 << 10; //forward
+                case 's': //forward key
+                    motors = 4 << 10; //direction
+                    motors1 = 14 << 10; //enable
                     break;
 
-                case 's': //backward key
-                    motors = 7 << 10; //backward
+                case 'd': //backward key
+                    motors = 0; //direction
+                    motors1 = 8 << 10; //enable
+                    break;
+
+                case 'q': //spin left
+                    motors = 5 << 10; //direction
+                    motors1 = 15 << 10; //enable
+                    break;
+
+                case 'e': //spin right
+                    motors = 0; //direction
+                    motors1 = 10 << 10; //enable
                     break;
 
                 case 'x': //exit key
@@ -369,10 +384,17 @@ void shut_down (void)    //stop robot, shut down booms
                     flag++;
                     break;
 
+            }//end switch
+            counter = 0;
+        }//end if
+        else {
+            if(counter++ == 20000) {
+                motors1 = 0;
+                counter = 0;
             }
-
-            PORTWrite (IOPORT_B, motors); //issue command to board
         }
+        PORTWrite  (IOPORT_B, motors); //set the motor direction before enabling to avoid burning H-Bridges
+        PORTWrite (IOPORT_B, motors1); //turn the motors on
     }
  }
 
