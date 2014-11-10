@@ -1,7 +1,7 @@
 robot
 =====
 
-==An autonomous (and remote controlled) robot that weeds your lawn!
+##An autonomous (and remote controlled) robot that weeds your lawn!
 
 General coding practices:
 -------------------------
