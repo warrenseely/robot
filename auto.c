@@ -468,7 +468,7 @@ void get_GPS_started (void)
 
  /*
  * Function: killswitch ()
- * Author: Matthew Ferran
+ * Author: Matthew Ferran // Warren Seely
  * Date Created: 11/5/14
  * Date Last Modified: 11/5/14
  * Discription: Allows the user to stop the robot while its in auto mode through bluetooth or by hitting button 1
