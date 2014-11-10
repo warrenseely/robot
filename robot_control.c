@@ -383,12 +383,12 @@ void shut_down (void)    //stop robot, shut down booms
                     traverse_boundary (flag); //get data
                     flag++;
                     break;
-
             }//end switch
             counter = 0;
         }//end if
         else {
-            if(counter++ == 20000) {
+            if(counter++ == 20000)
+            {
                 motors1 = 0;
                 counter = 0;
             }
