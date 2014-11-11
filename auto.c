@@ -51,11 +51,11 @@ void correct_path (void)
     {
         if (x > pass.D_heading)  //go right
         {
-            motor = 2 << 10;
+            motor = 8 << 10;
         }
         else if(x < pass.D_heading)  //go left
         {
-            motor = 1 << 10;
+            motor = 3 << 10;
         }
         else //case that robot is on the path, but going 90 deg to it
         {
@@ -66,11 +66,11 @@ void correct_path (void)
     {
         if(x < pass.D_heading)   //go left
         {
-            motor = 1 << 10;
+            motor = 8 << 10;
         }
         else if(x > pass.D_heading)  //go right
         {
-            motor = 2 << 10;
+            motor = 3 << 10;
         }
         else //case that robot is on the path, but going 90 deg to it
         {
@@ -82,7 +82,7 @@ void correct_path (void)
     //delay(1); //time to turn; (change to a below amount eventually)
 
      z = abs(z); //make sure z positive
-     y = 2*(z - 2); //amount to turn to correct
+     y = 2*(z - 2); //amount to turn to correct -> amount = 2*((amount off) - 2)
      z = Position.course; //preserve current heading on GPS
      do
      {
@@ -91,7 +91,7 @@ void correct_path (void)
           x = abs(x); //make sure positive
      }while(x <= y); //loop until turned by amount to get back on track
 
-    PORTWrite(IOPORT_B, 3 << 10); //both back on
+    PORTWrite(IOPORT_B, 11 << 10); //both back on
 }
 
 //****************************************************************************************************************
@@ -161,7 +161,7 @@ int job_done (void)
 {
     int i = 0;
 
-    while ( (*(&boundary.lat1 + i) != 0) && (i < 19)) //find end of boundary coordinates(may be less than 9 pairs)
+    while ((*(&boundary.lat1 + i) != 0) && (i < 19)) //find end of boundary coordinates(may be less than 9 pairs)
     {
         i = i + 2;  //only looking at the latitudes
     }
@@ -243,37 +243,35 @@ void navigate_area_start (void)
 
      if (pass.direction == 1) //if current direction is initial direction
      {
-         PORTWrite(IOPORT_B, 2<<10); //right side off
+         PORTWrite(IOPORT_B, 8 << 10); //right side off
          pass.D_heading += 90; //add 90 degrees
          while(x > 0) // loop until C_heading = D_heading + 90
          {
              get_current_data(); //get current heading, mainly going for compass heading here
              x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
+         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
 
-         while(distance(&flag) < boundary.width) //wait until traveled width
-         {
-         }
-
+         while(distance(&flag) < boundary.width); //wait until traveled width
+         
           //update the coordinates for the field end points(Simplified, assuming a square field)
          compute_pass_point();
 
          pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 2<<10); //right side off
+         PORTWrite(IOPORT_B, 8 << 10); //right side off
 
          while(x > 0) // loop until C_heading = MAS_hed1
          {
              get_current_data(); //get current heading, mainly going for compass heading here
              x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
+         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          pass.direction = 0; //update direction
      }
      else //current direction is secondary direction
      {
-         PORTWrite(IOPORT_B, 1<<10); //left side off
+         PORTWrite(IOPORT_B, 3 << 10); //left side off
          pass.D_heading -= 90; //subtract 90 degrees
 
          while(x > 0) // loop until course = D_heading - 90
@@ -281,25 +279,23 @@ void navigate_area_start (void)
              get_current_data(); //get current heading, mainly going for compass heading here
              x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
+         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          flag = 0; //reset flag
-         while(distance(&flag) < boundary.width) //wait until traveled width
-         {
-         }
+         while(distance(&flag) < boundary.width); //wait until traveled width
 
          //update the coordinates for the field end points(Simplified, assuming a square field)
          compute_pass_point();
 
          pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 1<<10); //left side off
+         PORTWrite(IOPORT_B, 3 << 10); //left side off
 
          while(x > 0) // loop until course = desired heading
          {
              get_current_data(); //get current heading, mainly going for compass heading here
              x = pass.D_heading - Position.course; //subtract to compare
          }
-         PORTWrite(IOPORT_B, 3<<10); //turned desired amount, continue
+         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          pass.direction = 1; //update direction
      }
  }
@@ -348,14 +344,14 @@ void navigate_area_start (void)
 
  double distance(int *flag) //computes distance from initial call until current call; set flag = 0 before initial call;
  {                          //used with loop, returns distance
-     double clat2 = 0, clon2 = 0, d = 0; //temps for latitude, longitude, distance
+     double clat2 = 0, clon2 = 0, d = -1; //temps for latitude, longitude, distance
 
      if (*flag == 0) //first time, copy current(start) location and get start coordinate
      {
         pass.clat1 = Position.lat; //copy Position.lat, Position.lon; preserve
         pass.clon1 = Position.lon;
         *flag = 1; //set flag
-        return -1;
+        return d;
      }
 
      get_current_data(); //get current position
@@ -411,7 +407,9 @@ void get_GPS_started (void)
 
      //start externals
      PORTWrite(IOPORT_E, 0xFF); //Enable boom nozzels
-     PORTWrite(IOPORT_B, 3 << 10); //start robot going forward
+     PORTWrite(IOPORT_B, 1 << 10); //set direction forward
+     PORTWrite(IOPORT_B, 11 << 10); //start robot going forward
+
  }
 
  //****************************************************************************************************************
@@ -493,14 +491,12 @@ void get_GPS_started (void)
 
      state = PORTRead (IOPORT_A) & 0xC0; //get button status
      
-     if (state == 0) //was a button pressed?
-     {
-         return 0; //no, keep going
-     }
      if (state == 0x40) //button one
      {
          return 1;
      }
+
+     return 0;
  }
 
  //****************************************************************************************************************
@@ -563,7 +559,7 @@ void get_GPS_started (void)
          }
 
          flag = 0; //reset flag each time
-         while(distance(&flag) < 5); //loop until traveled 5 feet
+         while(distance(&flag) < 5) ; //loop until traveled 5 feet
      }
      return exit;
  }

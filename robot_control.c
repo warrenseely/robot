@@ -140,10 +140,10 @@ void print (int choice)
     if (choice == 0)
     {
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"Awaiting input for mode",23);
+        SpiChnPutS (1,(unsigned int*)"Awaiting input  for mode",25);
         delay (5);
         LCD_rst ();
-        SpiChnPutS (1,(unsigned int*)"B1:Auto; B2:Man Both:Info",25);
+        SpiChnPutS (1,(unsigned int*)"B2:Man  B1:Auto Both:Info",26);
     }
     else if (choice == 1)
     {
@@ -331,7 +331,7 @@ void shut_down (void)    //stop robot, shut down booms
  {
     char choice = '\0';
     int flag = 0;
-    unsigned int motors = 0, motors1 = 0;
+    unsigned int motors = 0, motors1 = 0, temp = 0, temp1 = 0;
     int counter = 0;
 
     while (choice != 'x') //while choice is not to exit
@@ -344,7 +344,7 @@ void shut_down (void)    //stop robot, shut down booms
             switch (choice)
             {
 
-                case 'w': //right key
+                case 'w': //forward key
                     motors = 1 << 10; //direction
                     motors1 = 11 << 10; //enable
                     break;
@@ -354,12 +354,12 @@ void shut_down (void)    //stop robot, shut down booms
                     motors1 = 3 << 10; //enable
                     break;
 
-                case 's': //forward key
+                case 's': //backward key
                     motors = 4 << 10; //direction
                     motors1 = 14 << 10; //enable
                     break;
 
-                case 'd': //backward key
+                case 'd': //right key
                     motors = 0; //direction
                     motors1 = 8 << 10; //enable
                     break;
@@ -386,15 +386,21 @@ void shut_down (void)    //stop robot, shut down booms
             }//end switch
             counter = 0;
         }//end if
-        else {
-            if(counter++ == 20000)
+        else
+        {
+            if(counter++ == 30000)
             {
                 motors1 = 0;
                 counter = 0;
             }
         }
-        PORTWrite  (IOPORT_B, motors); //set the motor direction before enabling to avoid burning H-Bridges
-        PORTWrite (IOPORT_B, motors1); //turn the motors on
+        if((temp != motors) || (temp1 != motors1)) //check if the command has changed
+        {
+            temp = motors; //temp to check
+            temp1 = motors1; //temp to check
+            PORTWrite  (IOPORT_B, motors); //set the motor direction before enabling to avoid burning H-Bridges
+            PORTWrite (IOPORT_B, motors1); //turn the motors on
+        }
     }
  }
 
