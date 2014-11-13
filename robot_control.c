@@ -163,6 +163,11 @@ void print (int choice)
         //SpiChnWriteC (1,(unsigned char*)temp); //write the current width setting of the robot to the display screen
         SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
+    else if (choice == 4)
+    {
+        LCD_rst (); //clear screen
+        SpiChnPutS (1, (unsigned int*)"Acquiring BT signal", 20); //inform lost BT control signal
+    }
 }
 
 //****************************************************************************************************************
@@ -377,6 +382,7 @@ void shut_down (void)    //stop robot, shut down booms
                 case 'x': //exit key
                 case ' ': //stop key
                     motors = 0; //stop
+                    motors1 = 0; //stop
                     break;
 
                 case 'r': //record current data key
@@ -388,6 +394,18 @@ void shut_down (void)    //stop robot, shut down booms
         }//end if
         else
         {
+            if (!PORTRead(IOPORT_A) & 0x200) //RA9 is the BT module status pin; 0 when not connected, 1 when connected
+            {
+                motors = 0; //lost connection, shut motors off
+                motors1 = 0;
+                print(4); //inform lost BT control signal
+                flag = 1;
+            }
+            else if (flag == 1) //only go here if previously lost signal
+            {
+                LCD_rst(); //clear screen
+                flag = 0;
+            }
             if(counter++ == 30000)
             {
                 motors1 = 0;

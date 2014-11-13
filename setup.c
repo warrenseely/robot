@@ -16,7 +16,7 @@
 
 void setupPORTs()
 {
-    PORTSetPinsDigitalIn(IOPORT_A, BIT_6 | BIT_7); //setup buttons as inputs
+    PORTSetPinsDigitalIn(IOPORT_A, BIT_6 | BIT_7 | BIT_9); //setup buttons as inputs, and bit 9 is bluetooth status
     PORTSetPinsDigitalOut(IOPORT_B, BIT_10 | BIT_11 | BIT_12 | BIT_13); //PORTB 10-13 as robot movement controls
     PORTSetPinsDigitalOut(IOPORT_E, BIT_0 | BIT_1 | BIT_2 | BIT_3 | BIT_4 | BIT_5 | BIT_6 | BIT_7); //boom nozzel monitoring
     PORTSetPinsDigitalOut(IOPORT_F, BIT_8|BIT_5); //UART TX pins
