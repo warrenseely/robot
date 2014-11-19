@@ -1,0 +1,3 @@
+[submodule "btsend"]
+	path = btsend
+	url = https://github.com/brookskindle/btsend.git
