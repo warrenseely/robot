@@ -17,8 +17,6 @@ extern "C" {
 #include <math.h>
 #include "string.h"
 
-//extern int width;
-
 
 struct PASS_INFO
 {
@@ -138,6 +136,9 @@ struct PASS_INFO pass;//define struct to contain information for each pass
 
     int killswitch(void); //prototype emergency shutoff function
     int auto_mode(void); //the main auto mode runner
+
+    void DelayTime(int ms);
+    
 #ifdef	__cplusplus
 }
 #endif

@@ -24,6 +24,15 @@
 #include <peripheral/spi.h>
 
 
+void DelayTime(int ms)
+{
+    int i = 0;
+    while (i < (ms*6000))
+    {
+        i++;
+    }
+}
+
 /*
  * Function: get_current_data ()
  * Author: Warren Seely // Matthew Ferran

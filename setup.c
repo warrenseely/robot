@@ -91,14 +91,3 @@ void setup_SPIs (void)
 
 //****************************************************************************************************************
 
-void setup_I2C(void)
-{
-    
-}
-//void setupInt2(void)
-//{
-//    IPC2 = 6<<18; // IPC2 <18:20> for INT2; set priority to 6
-//    INTCONSET = 1<<2; // Set INT2 rising edge trigger
-//    INTCONSET = 1<<12; //multi-vector mode
-//    IEC0 = 1 << 13; //enable bit for Int2
-//}

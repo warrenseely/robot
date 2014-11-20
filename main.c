@@ -17,6 +17,7 @@
 
 
 #include "header.h"
+#include "compass.h"
 
 
 int main()
@@ -24,6 +25,25 @@ int main()
     //local variables
     int choice, status;
     //char error_code[3] = {'\0'}; //temporary storage for the upcoming interrupt error code
+    double current_heading = 0;
+
+/*********************COMPASS STUFF*********************************************/
+    //Configures system for optimum preformance without changing PB divider     *
+    SYSTEMConfig(GetSystemClock(), SYS_CFG_PCACHE | SYS_CFG_WAIT_STATES);
+
+    FIFOI2C_initialize(); //setup I2C
+
+    INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR); //setup multi vector mode
+    INTEnableInterrupts(); //enable interrupts for I2C
+
+    HMC5883L_startMeasurements(); //setup compass module
+
+    /*These are the compass reading functions. Need to call them in the appropriate locations. DO work in here*/
+//        DelayTime(200); //wait some time
+//        HMC5883L_queueReadXZY(); //read the compass
+//        HMC5883L_interpretXZY(); //convert the result to degrees
+//        current_heading = heading.course; //get the result
+/*******************************************************************************/
 
     boundary.lat1 = 46.435436;
     boundary.lon1 = 117.09737;
