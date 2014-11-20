@@ -44,8 +44,8 @@ void correct_path (void)
 
     y = pass.nav_from_lon - Position.lon;   //difference in the longitudes
 
-    z = atan (x/y); //get position heading, use this to compare to north and desired heading
-    z = ((double)180/3.14159) * z;  //convert to degrees
+    z = atan (x / y); //get position heading, use this to compare to north and desired heading
+    z = ((double)180 / 3.14159) * z;  //convert to degrees
     x = pass.D_heading - z;  //subtract heading here to compare
 
     if (pass.direction == 1) //if current direction is 1, initial heading to process left/right commands
@@ -54,22 +54,22 @@ void correct_path (void)
         {
             motor = 8 << 10;
         }
-        else if(x < pass.D_heading)  //go left
+        else if (x < pass.D_heading)  //go left
         {
             motor = 3 << 10;
         }
         else //case that robot is on the path, but going 90 deg to it
         {
-
+            
         }
     }
     else    //direction is 0
     {
-        if(x < pass.D_heading)   //go left
+        if (x < pass.D_heading)   //go left
         {
             motor = 8 << 10;
         }
-        else if(x > pass.D_heading)  //go right
+        else if (x > pass.D_heading)  //go right
         {
             motor = 3 << 10;
         }
@@ -79,20 +79,24 @@ void correct_path (void)
         }
     }
 
-    PORTWrite(IOPORT_B, motor); //turn direction
+    PORTWrite (IOPORT_B, motor); //turn direction
     //delay(1); //time to turn; (change to a below amount eventually)
 
      z = abs(z); //make sure z positive
      y = 2*(z - 2); //amount to turn to correct -> amount = 2*((amount off) - 2)
-     z = Position.course; //preserve current heading on GPS
+     //z = Position.course; //preserve current heading on GPS
+     read_compass(); //get compass heading
+     z = heading.course; //preserve current course
+     
      do
      {
-          get_current_data(); //update Position.course
-          x = Position.course - z; //change in course from beginning of loop until current
-          x = abs(x); //make sure positive
-     }while(x <= y); //loop until turned by amount to get back on track
+          //get_current_data(); //update Position.course
+         read_compass(); //update current course
+          //x = Position.course - z; //change in course from beginning of loop until current
+         x = abs(heading.course - z); //change in course from beginning of loop until current
+     }while (x <= y); //loop until turned by amount to get back on track
 
-    PORTWrite(IOPORT_B, 11 << 10); //both back on
+    PORTWrite (IOPORT_B, 11 << 10); //both back on
 }
 
 //****************************************************************************************************************
@@ -228,7 +232,7 @@ void navigate_area_start (void)
  double field_end(void)
  {
      int flag = 0, x = 1;
-     double clat2, clon2;
+     double clat2, clon2, temp = 0;
 
      pass.clat1 = Position.lat; //copy current position coordinates
      pass.clon1 = Position.lon;
@@ -246,11 +250,18 @@ void navigate_area_start (void)
      {
          PORTWrite(IOPORT_B, 8 << 10); //right side off
          pass.D_heading += 90; //add 90 degrees
-         while(x > 0) // loop until C_heading = D_heading + 90
+         read_compass(); //get current heading
+         temp = heading.course; //copy current heading
+
+         while(x > 0) // loop until current heading is 90 degrees
          {
-             get_current_data(); //get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course; //subtract to compare
+             //get_current_data(); //get current heading, mainly going for compass heading here
+             read_compass(); //get current heading
+             //x = pass.D_heading - Position.course; //subtract to compare
+             //x = pass.D_heading - heading.course; //subtract to compare
+             x = abs(temp) - abs(heading.course); //change in heading from start to current
          }
+
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
 
          while(distance(&flag) < boundary.width); //wait until traveled width
@@ -261,12 +272,17 @@ void navigate_area_start (void)
          pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 8 << 10); //right side off
+         read_compass(); //get current heading
+         temp = heading.course; //copy current heading
 
-         while(x > 0) // loop until C_heading = MAS_hed1
+         while(x > 0) // loop until current heading is 90 degrees
          {
-             get_current_data(); //get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course; //subtract to compare
+             //get_current_data(); //get current heading, mainly going for compass heading here
+             //x = pass.D_heading - Position.course; //subtract to compare
+             read_compass(); //get current heading
+             x = abs(temp) - abs(heading.course); // change in heading from start to current
          }
+
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          pass.direction = 0; //update direction
      }
@@ -274,12 +290,17 @@ void navigate_area_start (void)
      {
          PORTWrite(IOPORT_B, 3 << 10); //left side off
          pass.D_heading -= 90; //subtract 90 degrees
+         read_compass(); //get current heading
+         temp = heading.course; //copy current heading
 
          while(x > 0) // loop until course = D_heading - 90
          {
-             get_current_data(); //get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course; //subtract to compare
+             //get_current_data(); //get current heading, mainly going for compass heading here
+             //x = pass.D_heading - Position.course; //subtract to compare
+             read_compass(); //get current heading
+             x = abs(temp) - abs(heading.course); // change in heading from start to current
          }
+
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          flag = 0; //reset flag
          while(distance(&flag) < boundary.width); //wait until traveled width
@@ -290,12 +311,17 @@ void navigate_area_start (void)
          pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
 
          PORTWrite(IOPORT_B, 3 << 10); //left side off
-
+         read_compass(); //get current heading
+         temp = heading.course; //copy current heading
+         
          while(x > 0) // loop until course = desired heading
          {
-             get_current_data(); //get current heading, mainly going for compass heading here
-             x = pass.D_heading - Position.course; //subtract to compare
+             //get_current_data(); //get current heading, mainly going for compass heading here
+             //x = pass.D_heading - Position.course; //subtract to compare
+             read_compass(); //get current heading
+             x = abs(temp) - abs(heading.course); // change in heading from start to current
          }
+
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
          pass.direction = 1; //update direction
      }
@@ -565,7 +591,21 @@ void get_GPS_started (void)
      return exit;
  }
 
- void HMC5883L_startMeasurements()
+ //****************************************************************************************************************
+
+ /*
+ * Function: compass_startMeasurements ()
+ * Author: Warren Seely
+ * Date Created: 11/20/14
+ * Date Last Modified: 11/20/14
+ * Discription: set compass up
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions:
+ * Postconditions:
+ */
+
+ void compass_startMeasurements()
 {
     int i = 0;
     uint8 buffer[10];
@@ -582,14 +622,40 @@ void get_GPS_started (void)
     FIFOI2C_addQueue_writeDeviceRegisters(0, 0x00, buffer, 3);
 }
 
+//****************************************************************************************************************
 
-void HMC5883L_queueReadXZY()
+ /*
+ * Function: compass_queueReadXZY ()
+ * Author: Warren Seely
+ * Date Created: 11/20/14
+ * Date Last Modified: 11/20/14
+ * Discription: reads compass data
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions:
+ * Postconditions:
+ */
+
+void compass_queueReadXZY()
 {
     FIFOI2C_addQueue_readDeviceRegisters(0, 0x03, 6);
 }
 
+//****************************************************************************************************************
 
-void HMC5883L_interpretXZY()
+ /*
+ * Function: compass_interpretXZY ()
+ * Author: Warren Seely
+ * Date Created: 11/20/14
+ * Date Last Modified: 11/20/14
+ * Discription: converts compass readings to degrees
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions:
+ * Postconditions:
+ */
+
+void compass_interpretXZY()
 {
     uint8 x_msb = 0, x_lsb = 0;
     uint8 z_msb = 0, z_lsb = 0;
@@ -626,5 +692,31 @@ void HMC5883L_interpretXZY()
     if (heading.course > 360)
     {
         heading.course -= 360; //make sure angle between 0-360
+    }
+}
+
+//****************************************************************************************************************
+
+ /*
+ * Function: read_compass ()
+ * Author: Warren Seely
+ * Date Created: 11/20/14
+ * Date Last Modified: 11/20/14
+ * Discription: calls the functions to get compass readings
+ * Input: n/a
+ * Returns: n/a
+ * Preconditions:
+ * Postconditions:
+ */
+
+void read_compass()
+{
+    int i = 0;
+
+    while (i++ < 3) //loop 3 times to get a reading
+    {
+        compass_queueReadXZY(); //read compass
+        compass_interpretXZY(); //convert to degrees
+        DelayTime(200); //wait some time
     }
 }

@@ -85,9 +85,10 @@ extern "C" {
     uint8 FIFOI2C_addQueue_writeDeviceRegisters(uint16 device, uint8 start_address, uint8 byte_buffer[], uint32 buffer_length);
 
 
-    void HMC5883L_startMeasurements();
-    void HMC5883L_queueReadXZY();
-    void HMC5883L_interpretXZY();
+    void compass_startMeasurements();
+    void compass_queueReadXZY();
+    void compass_interpretXZY();
+    void read_compass();
 
     struct HEADING //for storing the heading readings
     {
