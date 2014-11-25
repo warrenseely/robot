@@ -25,6 +25,7 @@ int main()
     //local variables
     int choice, status;
 
+    //Temps for testing purposes
     boundary.lat1 = 46.435436;
     boundary.lon1 = 117.09737;
     boundary.lat2 = 46.435577;
@@ -43,7 +44,7 @@ int main()
     //Configures system for optimum preformance without changing PB divider     *
     SYSTEMConfig(GetSystemClock(), SYS_CFG_PCACHE | SYS_CFG_WAIT_STATES);
 
-    FIFOI2C_initialize(); //setup I2C
+    FIFOI2C_initialize(); //setup I2C interrupts
 
     INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR); //setup multi vector mode
     INTEnableInterrupts(); //enable interrupts for I2C
@@ -59,7 +60,7 @@ int main()
         switch (choice)
         {
             case 0:
-                status = auto_mode(); //Automatic guidance mode
+                status = auto_mode(); //Automatic guidance mode; status indicated whether completed task or user terminated
                 break;
 
             case 1:

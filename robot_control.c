@@ -146,9 +146,12 @@ void read_GPS_fields (char * address)
 void print (int choice)
 {
     char temp;
+
+    LCD_rst();
+
     if (choice == 0)
     {
-        LCD_rst ();
+        //LCD_rst ();
         SpiChnPutS (1,(unsigned int*)"Awaiting input  for mode",25);
         delay (5);
         LCD_rst ();
@@ -156,17 +159,17 @@ void print (int choice)
     }
     else if (choice == 1)
     {
-        LCD_rst ();
+       // LCD_rst ();
         SpiChnPutS (1,(unsigned int*)"Acquiring GPS Signal",20);
     }
     else if (choice == 2)
     {
-        LCD_rst ();
+       // LCD_rst ();
         SpiChnPutS (1,(unsigned int*)"GPS Signal Acquired",19);
     }
     else if (choice == 3)
     {
-        LCD_rst ();
+       // LCD_rst ();
         SpiChnPutS (1, (unsigned int*)"Pass width:", 11);
         temp = boundary.width + '0'; //convert width to a char to write
         //SpiChnWriteC (1,(unsigned char*)temp); //write the current width setting of the robot to the display screen
@@ -174,7 +177,7 @@ void print (int choice)
     }
     else if (choice == 4)
     {
-        LCD_rst (); //clear screen
+       // LCD_rst (); //clear screen
         SpiChnPutS (1, (unsigned int*)"Acquiring BT signal", 20); //inform lost BT control signal
     }
 }
@@ -212,7 +215,7 @@ void LCD_rst (void)  //set and home display cursor
  * Author: Warren Seely
  * Date Created: ???
  * Date Last Modified: 10/26/14
- * Discription: Choose a mode, check RF12 pin (?)
+ * Discription: Choose a mode
  * Input: n/a
  * Returns: n/a
  * Preconditions: n/a
@@ -222,8 +225,7 @@ int startup (void)
 {
     int choice;
     choice = mode (); //choose auto/manual/info-loading mode
-             //loop and check status of RF12 pin; if cylcing then wait until stays off before proceeding
-             //eventually write in a print message for the LCD to let user know whats going on
+             
     delay (5); //short delay to back away from robot
     return choice;
 }
@@ -258,28 +260,29 @@ int mode (void) //*****NOTE: ONLY WAY OUT IS EITHER AUTO MODE OR BOARD SHUTDOWN*
 
         switch (state)
         {
+            LCD_rst (); //reset screen
             case 0x40: // Button 1 pressed(auto mode)
-                LCD_rst (); //reset screen
+                //LCD_rst (); //reset screen
                 SpiChnPutS (1,(unsigned int*)"Auto mode chosen",17);
                 delay (2);   //wait for a bit
                 LCD_rst ();  //reset screen
                 SpiChnPutS (1,(unsigned int*)"Please stand back",18);
                 delay (2);  //wait for a bit
-                return 0; //auto mode chosen; continue program
+                return 0; //auto mode chosen
             break;
             
             case 0x80: // Button 2 pressed(manual mode)
-                LCD_rst (); //rest screen
+                //LCD_rst (); //rest screen
                 SpiChnPutS (1,(unsigned int*)"Manual mode chosen",19);
                 delay (2);   //wait for a bit
-                return 1; //manual ();   //manual mode function
+                return 1; //manual mode chosen
             break;
             
             case 0xC0: //Both buttons pressed(info mode)
-                LCD_rst();  //reset screen
+               // LCD_rst();  //reset screen
                 SpiChnPutS (1,(unsigned int*)"Info mode chosen",17);
                 delay (2);   //wait for a bit
-                return 2; //load_info ();   //load GPS boundary information into memory remotely with bluetooth
+                return 2; //load GPS boundary information into memory remotely with bluetooth
             break;
         }
     }
@@ -410,7 +413,7 @@ void shut_down (void)    //stop robot, shut down booms
                 print(4); //inform lost BT control signal
                 flag = 1;
             }
-            else if (flag == 1) //only go here if previously lost signal
+            else if ((flag == 1) && (PORTRead(IOPORT_A) & 0x200)) //only go here if previously lost signal, then reacquired it
             {
                 LCD_rst(); //clear screen
                 flag = 0;
@@ -423,6 +426,7 @@ void shut_down (void)    //stop robot, shut down booms
         }
         if((temp != motors) || (temp1 != motors1)) //check if the command has changed
         {
+            PORTWrite (IOPORT_B, 0); //shut motors off
             temp = motors; //temp to check
             temp1 = motors1; //temp to check
             PORTWrite  (IOPORT_B, motors); //set the motor direction before enabling to avoid burning H-Bridges
@@ -578,7 +582,7 @@ void load_coordinate (int pairnum, int i, char *flag) //actually load the coordi
                 counter++; //increment array address
             }
         }
-    }while(temp1 != ','); // End of number string signaled by a comma
+    }while((temp1 != ',') && (counter < 20)); // End of number string signaled by a comma or end of array size
 
     if (i == -1) //If i is -1, know to load the width
     {
@@ -586,7 +590,7 @@ void load_coordinate (int pairnum, int i, char *flag) //actually load the coordi
         return;
     }
 
-    for (counter = 0; counter < 18; counter++) //loop to check which coordinate pair to load into
+    for (counter = 0; counter < 18;) //loop to check which coordinate pair to load into
     {
         if (pairnum == counter) //found correct coordinate pair
         {
@@ -600,6 +604,7 @@ void load_coordinate (int pairnum, int i, char *flag) //actually load the coordi
                *(&boundary.lon1 + counter) = atof(temp); //convert string to double and store in struct
            }
         }
+        counter++; //incrment counter
     }
 }
 

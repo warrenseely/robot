@@ -1,14 +1,14 @@
 /*
-#// ***************************************************************************************************************************
-#// *                                                                                                                         *
-#// *                        THIS FILE PERFORMS AUTONOMOUS ROBOT GUIDANCE COMMANDS                                                *
-#// *                                                                                                                         *
-#// ***************************************************************************************************************************
+#// *********************************************************************************************************
+#// *                                                                                                       *
+#// *                        THIS FILE PERFORMS AUTONOMOUS ROBOT GUIDANCE COMMANDS                          *
+#// *                                                                                                       *
+#// *********************************************************************************************************
 
-#//*********INFORMATION**********************************************************************************************
+#//*********INFORMATION**************************************************************************************
 #//GPS set up in port JE(uart1)
 #//
-#//******************************************************************************************************************
+#//**********************************************************************************************************
 */
 
 #include "header.h"
@@ -248,18 +248,18 @@ void navigate_area_start (void)
 
      if (pass.direction == 1) //if current direction is initial direction
      {
-         PORTWrite(IOPORT_B, 8 << 10); //right side off
          pass.D_heading += 90; //add 90 degrees
          read_compass(); //get current heading
          temp = heading.course; //copy current heading
+         PORTWrite(IOPORT_B, 8 << 10); //right side off
 
-         while(x > 0) // loop until current heading is 90 degrees
+         while(x < 90) // loop until current heading is 90 degrees
          {
              //get_current_data(); //get current heading, mainly going for compass heading here
              read_compass(); //get current heading
              //x = pass.D_heading - Position.course; //subtract to compare
              //x = pass.D_heading - heading.course; //subtract to compare
-             x = abs(temp) - abs(heading.course); //change in heading from start to current
+             x = abs(temp - heading.course); //change in heading from start to current
          }
 
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
@@ -271,16 +271,16 @@ void navigate_area_start (void)
 
          pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 8 << 10); //right side off
          read_compass(); //get current heading
          temp = heading.course; //copy current heading
+         PORTWrite(IOPORT_B, 8 << 10); //right side off
 
-         while(x > 0) // loop until current heading is 90 degrees
+         while(x < 90) // loop until current heading is 90 degrees
          {
              //get_current_data(); //get current heading, mainly going for compass heading here
              //x = pass.D_heading - Position.course; //subtract to compare
              read_compass(); //get current heading
-             x = abs(temp) - abs(heading.course); // change in heading from start to current
+             x = abs(temp - heading.course); // change in heading from start to current
          }
 
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
@@ -288,17 +288,17 @@ void navigate_area_start (void)
      }
      else //current direction is secondary direction
      {
-         PORTWrite(IOPORT_B, 3 << 10); //left side off
          pass.D_heading -= 90; //subtract 90 degrees
          read_compass(); //get current heading
          temp = heading.course; //copy current heading
+         PORTWrite(IOPORT_B, 3 << 10); //left side off
 
-         while(x > 0) // loop until course = D_heading - 90
+         while(x < 90) // loop until course = D_heading - 90
          {
              //get_current_data(); //get current heading, mainly going for compass heading here
              //x = pass.D_heading - Position.course; //subtract to compare
              read_compass(); //get current heading
-             x = abs(temp) - abs(heading.course); // change in heading from start to current
+             x = abs(temp - heading.course); // change in heading from start to current
          }
 
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
@@ -310,16 +310,16 @@ void navigate_area_start (void)
 
          pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
 
-         PORTWrite(IOPORT_B, 3 << 10); //left side off
          read_compass(); //get current heading
          temp = heading.course; //copy current heading
+         PORTWrite(IOPORT_B, 3 << 10); //left side off
          
-         while(x > 0) // loop until course = desired heading
+         while(x < 90) // loop until course = desired heading
          {
              //get_current_data(); //get current heading, mainly going for compass heading here
              //x = pass.D_heading - Position.course; //subtract to compare
              read_compass(); //get current heading
-             x = abs(temp) - abs(heading.course); // change in heading from start to current
+             x = abs(temp - heading.course); // change in heading from start to current
          }
 
          PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue

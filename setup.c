@@ -1,13 +1,13 @@
-#// ***************************************************************************************************************************
-#// *                                                                                                                         *
-#// *                        THIS FILE PERFORMS BOARD SETUP AND INITALIZATION                                                *
-#// *                                                                                                                         *
-#// ***************************************************************************************************************************
+#// ****************************************************************************************************************
+#// *                                                                                                              *
+#// *                        THIS FILE PERFORMS BOARD SETUP AND INITALIZATION                                      *
+#// *                                                                                                              *
+#// ****************************************************************************************************************
 
 #//*********INFORMATION**********************************************************************************************
 #//
-#// PORT B 10-13 for robot movement control
-#// BIT 10 is RIGHT side; 11 is LEFT side
+#// 
+#// 
 #//
 #//
 #//******************************************************************************************************************
@@ -21,21 +21,21 @@ void setupPORTs()
     PORTSetPinsDigitalOut(IOPORT_E, BIT_0 | BIT_1 | BIT_2 | BIT_3 | BIT_4 | BIT_5 | BIT_6 | BIT_7); //boom nozzel monitoring
     PORTSetPinsDigitalOut(IOPORT_F, BIT_8|BIT_5); //UART TX pins
     PORTSetPinsDigitalIn(IOPORT_F, BIT_2|BIT_4|BIT_12); //UART RX pins and GPS status pin
-    PORTSetPinsDigitalIn(IOPORT_D, BIT_3);//for GPS status monitoring
+    //PORTSetPinsDigitalIn(IOPORT_D, BIT_3);//for GPS status monitoring
     // Master Mode
 	/* SDO1 - Output - RD0
 	   SDI1 - Input - RC4
 	   SCK1 - Ouput - RD10
 	   SS1  - Output - RD9 */
 
-    PORTSetPinsDigitalOut (IOPORT_D, BIT_0 | BIT_9 | BIT_10);
+    PORTSetPinsDigitalOut (IOPORT_D, BIT_0 | BIT_9 | BIT_10); //SPI pins
     PORTSetPinsDigitalIn (IOPORT_C, BIT_4);
 
-    // I2C Port #1 - connected to pmod CLS
-    // RA14 SCL1/INT3/RA14	 N/A 	I2C Bus #1, J2, not shared with Pmod connector
+    // I2C Port #2 - connected to pmod CLS
+    // RA14 SCL1/INT3/RA14	 N/A 	I2C Bus #2, J2, not shared with Pmod connector
     // RA15 SDA1/INT4/RA15 	 N/A
 
-    PORTSetPinsDigitalOut (IOPORT_A, BIT_14 | BIT_15);
+    PORTSetPinsDigitalOut (IOPORT_A, BIT_14 | BIT_15); //I2C pins
 }
 
 //****************************************************************************************************************

@@ -1,4 +1,4 @@
-#include "compass.h"
+#include "header.h"
 
 //Local to .c file
 FIFOI2C_Device FIFOI2C_Devices_List[FIFOI2C_DEVICES_COUNT];
