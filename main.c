@@ -6,7 +6,7 @@
 # //* File: robot                                                                                                   *
 # //* Description: Robot control. GPS positioning and path accuracy. Manual and Automatic guidance.                                                   *
 # //*                   NOTE: field_end() IS ONLY WORKABLE FOR 4 CORNER SQUARE IN THIS VERSION                                                                                                      *
-# //* Inputs:       Buttons, GPS, BT module, compass module                                                                                                          *
+# //* Inputs:        Buttons, GPS, BT module, compass module                                                                                                          *
 # //* Outputs:    UART (JE 0:4), Display screen, robot motors                                                                                                            *
 # //* Computations:     BAUD Rate, heading angle, distance traveled                                                                                                      *
 # //*      REFER TO Robot_1 main.s for original programming info                                                                                                                   *
@@ -17,7 +17,6 @@
 
 
 #include "header.h"
-#include "compass.h"
 
 
 int main()

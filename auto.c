@@ -12,7 +12,6 @@
 */
 
 #include "header.h"
-#include "compass.h"
 #include <plib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -231,13 +230,9 @@ void navigate_area_start (void)
 
  double field_end(void)
  {
-     int flag = 0, x = 1;
-     double clat2, clon2, temp = 0;
-
-     pass.clat1 = Position.lat; //copy current position coordinates
-     pass.clon1 = Position.lon;
-     clat2 = pass.nav_to_lat; //get the field end coordinates
-     clon2 = pass.nav_to_lon;
+     int flag = 0, count = 0;
+     double clat2, clon2, temp = 0, x = 1, y = 0, final = 0;
+     unsigned int motor = 0, motor1 = 11 << 10;
 
      //if current position is not the same as the end coordinates of the current pass, return
      //otherwise continue(current position is the same as end coordinates of current pass)-> reached end
@@ -246,85 +241,63 @@ void navigate_area_start (void)
          return;
      }
 
-     if (pass.direction == 1) //if current direction is initial direction
+     pass.clat1 = Position.lat; //copy current position coordinates
+     pass.clon1 = Position.lon;
+     clat2 = pass.nav_to_lat; //get the field end coordinates
+     clon2 = pass.nav_to_lon;
+
+     if (pass.direction == 1)
      {
          pass.D_heading += 90; //add 90 degrees
-         read_compass(); //get current heading
-         temp = heading.course; //copy current heading
-         PORTWrite(IOPORT_B, 8 << 10); //right side off
-
-         while(x < 90) // loop until current heading is 90 degrees
-         {
-             //get_current_data(); //get current heading, mainly going for compass heading here
-             read_compass(); //get current heading
-             //x = pass.D_heading - Position.course; //subtract to compare
-             //x = pass.D_heading - heading.course; //subtract to compare
-             x = abs(temp - heading.course); //change in heading from start to current
-         }
-
-         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
-
-         while(distance(&flag) < boundary.width); //wait until traveled width
-         
-          //update the coordinates for the field end points(Simplified, assuming a square field)
-         compute_pass_point();
-
-         pass.D_heading = pass.Secondary; //desired new heading is secondary heading(Secondary) 180 degrees off previous heading
-
-         read_compass(); //get current heading
-         temp = heading.course; //copy current heading
-         PORTWrite(IOPORT_B, 8 << 10); //right side off
-
-         while(x < 90) // loop until current heading is 90 degrees
-         {
-             //get_current_data(); //get current heading, mainly going for compass heading here
-             //x = pass.D_heading - Position.course; //subtract to compare
-             read_compass(); //get current heading
-             x = abs(temp - heading.course); // change in heading from start to current
-         }
-
-         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
-         pass.direction = 0; //update direction
+         motor = 8 << 10; //right side off
+         final = pass.Secondary; //the final new heading
+         pass.direction = 0; //the new direction
      }
-     else //current direction is secondary direction
+     else //direction = 0
      {
          pass.D_heading -= 90; //subtract 90 degrees
+         motor = 3 << 10; //left side off
+         final = pass.Master; //the final new heading
+         pass.direction = 1; //the new direction
+     }
+
+     while (count < 2) //loop twice
+     {
          read_compass(); //get current heading
          temp = heading.course; //copy current heading
-         PORTWrite(IOPORT_B, 3 << 10); //left side off
 
-         while(x < 90) // loop until course = D_heading - 90
+         if (temp < 92) //check that no overflow to 360
          {
-             //get_current_data(); //get current heading, mainly going for compass heading here
-             //x = pass.D_heading - Position.course; //subtract to compare
-             read_compass(); //get current heading
-             x = abs(temp - heading.course); // change in heading from start to current
+             y = abs(temp - 92); //the distance from 0; will add to temp and course
+         }
+         else if (temp > 268) //check that no overflow to 0
+         {
+             y = temp - 360; //the distance from 360; will subtract from temp and course
+         }
+         else
+         {
+             y = 0; //no shift
          }
 
-         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
-         flag = 0; //reset flag
+         PORTWrite(IOPORT_B, motor); //one side off
+
+         while(x < 90) // loop until current heading is 90 degrees
+         {
+             read_compass(); //get current heading
+             x = abs((temp + y) - (heading.course + y)); //change in heading from start to current, shifted to stay positive
+         }
+
+         PORTWrite(IOPORT_B, motor1); //turn motors back on
+
          while(distance(&flag) < boundary.width); //wait until traveled width
 
          //update the coordinates for the field end points(Simplified, assuming a square field)
          compute_pass_point();
 
-         pass.D_heading = pass.Master; //desired new heading is primary heading(Master) 180 degrees off previous heading
-
-         read_compass(); //get current heading
-         temp = heading.course; //copy current heading
-         PORTWrite(IOPORT_B, 3 << 10); //left side off
-         
-         while(x < 90) // loop until course = desired heading
-         {
-             //get_current_data(); //get current heading, mainly going for compass heading here
-             //x = pass.D_heading - Position.course; //subtract to compare
-             read_compass(); //get current heading
-             x = abs(temp - heading.course); // change in heading from start to current
-         }
-
-         PORTWrite(IOPORT_B, 11 << 10); //turned desired amount, continue
-         pass.direction = 1; //update direction
+         count++; //increment count
      }
+
+     pass.D_heading = final; //update the desired direction
  }
 
  //****************************************************************************************************************
